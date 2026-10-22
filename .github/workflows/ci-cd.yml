@@ -1,0 +1,75 @@
+# Build + test on every push and pull request; deploy to Azure on every push to main.
+#
+# The deploy job is skipped until the Azure setup in CONTRIBUTING.md ("One-time setup") is done:
+#   - repository variable  AZURE_WEBAPP_NAME             (Settings > Secrets and variables > Actions > Variables)
+#   - repository secret    AZURE_WEBAPP_PUBLISH_PROFILE  (Settings > Secrets and variables > Actions > Secrets)
+
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build and run tests
+        run: ./mvnw -B -ntp verify
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: target/surefire-reports/
+
+      - name: Upload JAR for deployment
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-jar
+          path: target/mini-shopify.jar
+          retention-days: 7
+
+  deploy:
+    name: Deploy to Azure
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.AZURE_WEBAPP_NAME != ''
+    runs-on: ubuntu-latest
+    # Shows up under "Deployments" on the repo page, which gives a record of deploy frequency.
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.webapp-url }}
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    steps:
+      - name: Download JAR
+        uses: actions/download-artifact@v8
+        with:
+          name: app-jar
+
+      - name: Deploy to Azure App Service
+        id: deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: mini-shopify.jar

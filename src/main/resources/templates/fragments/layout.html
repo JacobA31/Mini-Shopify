@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<!--
+  Shared page fragments. Every page should include these so the site looks consistent:
+
+    <head th:replace="~{fragments/layout :: head('Page title')}"></head>
+    <header th:replace="~{fragments/layout :: header}"></header>
+    ...page content...
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+  Only add a nav link once the page it points to exists (no dangling links at the final demo).
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | Mini-Shopify'">Mini-Shopify</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+
+<body>
+
+<header th:fragment="header" class="site-header">
+    <a class="brand" th:href="@{/}">Mini-Shopify</a>
+    <nav>
+        <!-- Add links here as features are implemented -->
+    </nav>
+</header>
+
+<footer th:fragment="footer" class="site-footer">
+    <p>SYSC 4806 term project</p>
+</footer>
+
+</body>
+</html>
