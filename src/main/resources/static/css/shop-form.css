@@ -1,0 +1,63 @@
+.shop-form-page {
+    max-width: 42rem;
+}
+
+.form-field {
+    margin-block: 1rem;
+}
+
+.form-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+}
+
+.form-field input,
+.form-field textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.6rem;
+    font: inherit;
+}
+
+.tag-entry {
+    align-items: flex-start;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tag-entry textarea {
+    flex: 1;
+}
+
+.field-help {
+    font-size: 0.9rem;
+}
+
+.field-error {
+    color: #a40000;
+}
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.tag-chip {
+    align-items: center;
+    background: #edf2f7;
+    border-radius: 999px;
+    display: inline-flex;
+    gap: 0.4rem;
+    padding: 0.25rem 0.65rem;
+}
+
+.tag-chip button {
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    line-height: 1;
+}

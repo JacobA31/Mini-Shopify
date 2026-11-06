@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Shop created')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <h1>Shop created</h1>
+    <h2 th:text="${createdShopName}">Shop name</h2>
+
+    <p th:if="${createdShopDescription != null and !#strings.isEmpty(createdShopDescription)}"
+       th:text="${createdShopDescription}"></p>
+    <p th:if="${createdShopDescription == null or #strings.isEmpty(createdShopDescription)}">
+        No description was added.
+    </p>
+
+    <section aria-labelledby="shop-tags-heading">
+        <h3 id="shop-tags-heading">Tags</h3>
+        <ul th:if="${!#lists.isEmpty(createdShopTags)}">
+            <li th:each="tag : ${createdShopTags}" th:text="${tag}">tag</li>
+        </ul>
+        <p th:if="${#lists.isEmpty(createdShopTags)}">No tags were added.</p>
+    </section>
+
+    <a th:href="@{/shops/new}">Create another shop</a>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
