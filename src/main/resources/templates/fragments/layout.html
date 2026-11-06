@@ -16,6 +16,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${title} + ' | Mini-Shopify'">Mini-Shopify</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/shop-form.css}">
 </head>
 
 <body>
@@ -23,7 +24,7 @@
 <header th:fragment="header" class="site-header">
     <a class="brand" th:href="@{/}">Mini-Shopify</a>
     <nav>
-        <!-- Add links here as features are implemented -->
+        <a th:href="@{/shops/new}">Create a shop</a>
     </nav>
 </header>
 
