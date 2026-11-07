@@ -8,7 +8,9 @@ import com.minishopify.repository.TagRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -37,6 +39,14 @@ public class ShopService {
         }
 
         return shopRepository.save(shop);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Shop> searchShops(String query) {
+
+        String keyword = query.trim();
+        Set<Shop> results = new LinkedHashSet<>(shopRepository.findByNameContainingIgnoreCase(keyword));
+        return new ArrayList<>(results);
     }
 
     private Set<String> normalizeTags(Iterable<String> submittedTags) {

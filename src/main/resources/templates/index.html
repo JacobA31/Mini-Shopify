@@ -6,7 +6,20 @@
 
 <main class="container">
     <h1>Mini-Shopify</h1>
-    <p>Create a shop to get started.</p>
+
+    <form th:action="@{/}" method="get">
+        <input type="text" name="query" th:value="${query}" placeholder="Search by shop name or tag">
+        <button type="submit">Search</button>
+    </form>
+
+    <p th:if="${shops != null and shops.isEmpty()}">No shops found.</p>
+
+    <ul th:if="${shops != null}">
+        <li th:each="shop : ${shops}">
+            <strong th:text="${shop.name}">Shop name</strong>
+            <span th:text="${shop.description}">Description</span>
+        </li>
+    </ul>
 </main>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
