@@ -46,6 +46,7 @@ public class ShopService {
 
         String keyword = query.trim();
         Set<Shop> results = new LinkedHashSet<>(shopRepository.findByNameContainingIgnoreCase(keyword));
+        results.addAll(shopRepository.findByTags_NameIgnoreCase(keyword));
         return new ArrayList<>(results);
     }
 
