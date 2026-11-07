@@ -41,6 +41,10 @@ public class ShopService {
         return shopRepository.save(shop);
     }
 
+    public boolean hasShops() {
+        return shopRepository.count() > 0;
+    }
+
     @Transactional(readOnly = true)
     public List<Shop> searchShops(String query) {
 

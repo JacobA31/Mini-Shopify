@@ -21,6 +21,7 @@ public class HomeController {
     @GetMapping("/")
     public String home(@RequestParam(name = "query", required = false) String query, Model model) {
         model.addAttribute("query", query);
+        model.addAttribute("hasShops", shopService.hasShops());
 
         if (query != null && !query.isBlank()) {
             model.addAttribute("shops", shopService.searchShops(query));

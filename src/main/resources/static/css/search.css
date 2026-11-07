@@ -1,0 +1,54 @@
+.search-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 0.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font: inherit;
+}
+
+.search-bar button {
+    padding: 0.6rem 1.2rem;
+    border: 0;
+    border-radius: 6px;
+    background: var(--color-primary);
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+}
+
+.search-bar button:hover {
+    background: #1b5e20;
+}
+
+.shop-list {
+    list-style: none;
+    padding: 0;
+}
+
+.shop-card {
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.shop-card p {
+    margin: 0.25rem 0 0.5rem;
+    color: var(--color-muted);
+}
+
+.shop-tag {
+    display: inline-block;
+    margin-right: 0.4rem;
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    background: #e8f5e9;
+    color: var(--color-primary);
+    font-size: 0.85rem;
+}
