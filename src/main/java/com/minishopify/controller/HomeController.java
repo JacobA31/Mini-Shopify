@@ -1,17 +1,31 @@
 package com.minishopify.controller;
 
+import com.minishopify.service.ShopService;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * Landing page. Placeholder until the first real feature lands, so that the deployed
- * app on Azure always has something to show.
+ * Home page: lists shops and searches them by name or tag
  */
 @Controller
 public class HomeController {
 
+    private final ShopService shopService;
+
+    public HomeController(ShopService shopService) {
+        this.shopService = shopService;
+    }
+
     @GetMapping("/")
-    public String home() {
+    public String home(@RequestParam(name = "query", required = false) String query, Model model) {
+        model.addAttribute("query", query);
+        model.addAttribute("hasShops", shopService.hasShops());
+
+        if (query != null && !query.isBlank()) {
+            model.addAttribute("shops", shopService.searchShops(query));
+        }
         return "index";
     }
 
