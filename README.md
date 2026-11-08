@@ -103,7 +103,15 @@ classDiagram
         Long id
         String name
     }
+    class Product {
+        Long id
+        String name
+        String description
+        BigDecimal price
+        int inventory
+    }
     Shop "*" -- "*" Tag : tags
+    Product "*" --> "1" Shop : shop
 ```
 
 ## Database schema
@@ -123,7 +131,16 @@ erDiagram
         BIGINT shop_id PK, FK
         BIGINT tag_id PK, FK
     }
+    PRODUCTS{
+        BIGINT id PK
+        VARCHAR(255) name
+        VARCHAR(255) description
+        DECIMAL price
+        INTEGER inventory
+        BIGINT shop_id FK
+    }
 
     SHOPS ||--o{ SHOP_TAGS : has
     TAGS ||--o{ SHOP_TAGS : labels
+    SHOPS ||--o{ PRODUCTS : sells
 ```

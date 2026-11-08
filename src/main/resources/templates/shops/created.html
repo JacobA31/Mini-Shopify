@@ -23,6 +23,8 @@
     </section>
 
     <a th:href="@{/shops/new}">Create another shop</a>
+
+    <a th:href="@{/shops/{id}/products/new(id=${createdShopId})}">Add products to this shop</a>
 </main>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
