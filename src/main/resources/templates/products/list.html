@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Products')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container product-list-page">
+    <h1>Products</h1>
+    <p>Shop: <strong th:text="${shop.name}">Shop name</strong></p>
+
+    <p th:if="${addedProductName != null}">
+        Added <strong th:text="${addedProductName}">product</strong>.
+    </p>
+
+    <table th:if="${!#lists.isEmpty(products)}">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Inventory</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="product : ${products}">
+            <td th:text="${product.name}">Name</td>
+            <td th:text="${product.description}">Description</td>
+            <td th:text="${'$' + #numbers.formatDecimal(product.price, 1, 2)}">$0.00</td>
+            <td th:text="${product.inventory}">0</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${#lists.isEmpty(products)}">This shop has no products yet.</p>
+
+    <p><a th:href="@{/shops/{id}/products/new(id=${shop.id})}">Add a product</a></p>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
