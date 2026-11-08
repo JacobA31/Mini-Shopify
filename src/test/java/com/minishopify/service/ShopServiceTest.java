@@ -74,4 +74,31 @@ class ShopServiceTest {
         verify(tagRepository, never()).save(any(Tag.class));
     }
 
+    @Test
+    void searchByTagReturnsShopsWithThatTag() {
+        Shop shop = new Shop("Corner Store", "A small local shop");
+        shop.addTag(new Tag("coffee"));
+
+        when(shopRepository.findByNameContainingIgnoreCase("coffee")).thenReturn(List.of());
+        when(shopRepository.findByTags_NameIgnoreCase("coffee")).thenReturn(List.of(shop));
+
+        List<Shop> results = shopService.searchShops("  coffee  ");
+
+        assertEquals(List.of(shop), results);
+    }
+
+    @Test
+    void searchMatchingNameAndTagReturnsShopOnce() {
+        Shop shop = new Shop("Coffee Shop", "Fresh coffee");
+        shop.addTag(new Tag("coffee"));
+
+        when(shopRepository.findByNameContainingIgnoreCase("coffee")).thenReturn(List.of(shop));
+        when(shopRepository.findByTags_NameIgnoreCase("coffee")).thenReturn(List.of(shop));
+
+        List<Shop> results = shopService.searchShops("coffee");
+
+        assertEquals(1, results.size());
+        assertEquals(shop, results.get(0));
+    }
+
 }
