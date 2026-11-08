@@ -49,6 +49,7 @@ public class ShopController {
         redirectAttributes.addFlashAttribute("createdShopName", createdShop.getName());
         redirectAttributes.addFlashAttribute("createdShopDescription", createdShop.getDescription());
         redirectAttributes.addFlashAttribute("createdShopTags", createdTagNames);
+        redirectAttributes.addFlashAttribute("createdShopId", createdShop.getId());
         return "redirect:/shops/created";
     }
 
