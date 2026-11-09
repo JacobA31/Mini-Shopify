@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Create a shop')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container shop-form-page">
+    <h1>Create a shop</h1>
+    <p>Enter your shop details, then add any tags that describe it.</p>
+
+    <form th:action="@{/shops}" th:object="${shopForm}" method="post" id="shop-form">
+        <div class="form-field">
+            <label for="name">Shop name</label>
+            <input type="text" th:field="*{name}" required autocomplete="organization">
+            <p class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+        </div>
+
+        <div class="form-field">
+            <label for="description">Description</label>
+            <textarea th:field="*{description}" rows="4"></textarea>
+        </div>
+
+        <div class="form-field">
+            <label for="tag-input">Tags</label>
+            <div class="tag-entry">
+                <textarea id="tag-input" rows="2" maxlength="100"
+                          aria-describedby="tag-help"
+                          placeholder="For example: coffee or home decor"></textarea>
+                <button type="button" id="add-tag-button">Add tag</button>
+            </div>
+            <p id="tag-help" class="field-help">Add one tag at a time. You can remove a tag before creating the shop.</p>
+            <div id="tag-list" class="tag-list" aria-live="polite">
+                <div class="tag-chip" th:each="tag : ${shopForm.tags}">
+                    <span th:text="${tag}">tag</span>
+                    <button type="button" class="remove-tag" aria-label="Remove tag">&times;</button>
+                    <input type="hidden" name="tags" th:value="${tag}">
+                </div>
+            </div>
+        </div>
+
+        <button type="submit">Create shop</button>
+    </form>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:src="@{/js/shop-form.js}" defer></script>
+</body>
+</html>

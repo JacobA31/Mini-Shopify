@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Add a product')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container product-form-page">
+    <h1>Add a product</h1>
+    <p>Adding to <strong th:text="${shop.name}">Shop name</strong></p>
+
+    <form th:action="@{/shops/{id}/products(id=${shop.id})}" th:object="${productForm}" method="post" id="product-form">
+        <div class="form-field">
+            <label for="name">Product name</label>
+            <input type="text" th:field="*{name}" required>
+            <p class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+        </div>
+
+        <div class="form-field">
+            <label for="description">Description</label>
+            <textarea th:field="*{description}" rows="4"></textarea>
+            <p class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></p>
+        </div>
+
+        <div class="form-field">
+            <label for="price">Price</label>
+            <input type="number" th:field="*{price}" step="0.01" min="0.01" required>
+            <p class="field-error" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></p>
+        </div>
+
+        <div class="form-field">
+            <label for="inventory">Inventory</label>
+            <input type="number" th:field="*{inventory}" step="1" min="0" required>
+            <p class="field-error" th:if="${#fields.hasErrors('inventory')}" th:errors="*{inventory}"></p>
+        </div>
+
+        <button type="submit">Add product</button>
+    </form>
+
+    <p><a th:href="@{/shops/{id}/products(id=${shop.id})}">Back to products</a></p>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

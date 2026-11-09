@@ -6,7 +6,22 @@
 
 <main class="container">
     <h1>Mini-Shopify</h1>
-    <p>Create your own shop, or find one by name or category. Coming soon.</p>
+
+    <form class="search-bar" th:action="@{/}" method="get">
+        <input type="text" name="query" th:value="${query}" placeholder="Search by shop name or tag">
+        <button type="submit">Search</button>
+    </form>
+
+    <p th:if="${shops != null and shops.isEmpty()}">No shops found.</p>
+    <p th:unless="${hasShops}">Create a shop to get started.</p>
+
+    <ul class="shop-list" th:if="${shops != null}">
+        <li class="shop-card" th:each="shop : ${shops}">
+            <strong th:text="${shop.name}">Shop name</strong>
+            <p th:text="${shop.description}">Description</p>
+            <span class="shop-tag" th:each="tag : ${shop.tags}" th:text="${tag.name}">tag</span>
+        </li>
+    </ul>
 </main>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
