@@ -62,7 +62,7 @@ Keep this in sync with the board before every milestone._
 | Backlog     | [#7](https://github.com/JacobA31/Mini-Shopify/issues/7) Create a shop with a name, description, and tags      | FareedElbokl   |
 | Backlog     | [#8](https://github.com/JacobA31/Mini-Shopify/issues/8) Add products with a description, price, and inventory | radhepatel55   |
 | Backlog     | [#9](https://github.com/JacobA31/Mini-Shopify/issues/9) Search shops by name or tag                           | tabiafarid     |
-| Backlog     | [#10](https://github.com/JacobA31/Mini-Shopify/issues/10) View a shop's product catalog                       | BouaklineMahdi |
+| Completed   | [#10](https://github.com/JacobA31/Mini-Shopify/issues/10) View a shop's product catalog                       | BouaklineMahdi |
 
 **What works today:** the Spring Boot skeleton builds, and CI runs the tests on every pull request and
 every push to `main`. Every push to `main` is also deployed automatically to the
