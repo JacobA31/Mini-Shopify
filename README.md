@@ -53,16 +53,17 @@ Keep this in sync with the board before every milestone._
 **Sprint 1 ([Sprint 1 – Prototype](https://github.com/JacobA31/Mini-Shopify/milestone/1), demo Nov 12):**
 4 of 8 issues completed (the project setup). The 4 feature issues are assigned and in the backlog.
 
-| Column      | Issue                                                                                                         | Owner          |
-|-------------|---------------------------------------------------------------------------------------------------------------|----------------|
-| Completed   | [#3](https://github.com/JacobA31/Mini-Shopify/issues/3) CI: build and test on every PR and push               | JacobA31       |
-| Completed   | [#4](https://github.com/JacobA31/Mini-Shopify/issues/4) Project skeleton with layered packages                | JacobA31       |
-| Completed   | [#5](https://github.com/JacobA31/Mini-Shopify/issues/5) Deploy to Azure from CI                               | JacobA31       |
-| Completed   | [#6](https://github.com/JacobA31/Mini-Shopify/issues/6) Repo setup: collaborators and branch protection       | JacobA31       |
-| Backlog     | [#7](https://github.com/JacobA31/Mini-Shopify/issues/7) Create a shop with a name, description, and tags      | FareedElbokl   |
-| Backlog     | [#8](https://github.com/JacobA31/Mini-Shopify/issues/8) Add products with a description, price, and inventory | radhepatel55   |
-| Backlog     | [#9](https://github.com/JacobA31/Mini-Shopify/issues/9) Search shops by name or tag                           | tabiafarid     |
-| Completed   | [#10](https://github.com/JacobA31/Mini-Shopify/issues/10) View a shop's product catalog                       | BouaklineMahdi |
+| Column        | Issue                                                                                                         |   Owner           |
+|---------------|---------------------------------------------------------------------------------------------------------------|----------------|
+| Completed     | [#3](https://github.com/JacobA31/Mini-Shopify/issues/3) CI: build and test on every PR and push               | JacobA31        |
+| Completed     | [#4](https://github.com/JacobA31/Mini-Shopify/issues/4) Project skeleton with layered packages                | JacobA31        |
+| Completed     | [#5](https://github.com/JacobA31/Mini-Shopify/issues/5) Deploy to Azure from CI                               | JacobA31        |
+| Completed     | [#6](https://github.com/JacobA31/Mini-Shopify/issues/6) Repo setup: collaborators and branch protection       | JacobA31        |
+| Completed     | [#7](https://github.com/JacobA31/Mini-Shopify/issues/7) Create a shop with a name, description, and tags      | FareedElbokl    |
+| Completed     | [#8](https://github.com/JacobA31/Mini-Shopify/issues/8) Add products with a description, price, and inventory | radhepatel55    |
+| Completed     | [#9](https://github.com/JacobA31/Mini-Shopify/issues/9) Search shops by name or tag                           | tabiafarid      |
+| Completed     | [#10](https://github.com/JacobA31/Mini-Shopify/issues/10) View a shop's product catalog                       | BouaklineMahdi  |
+| Completed     | [#16](https://github.com/JacobA31/Mini-Shopify/issues/16) Milestone 1: Integration testing                    | everyone        |
 
 **What works today:** the Spring Boot skeleton builds, and CI runs the tests on every pull request and
 every push to `main`. Every push to `main` is also deployed automatically to the
