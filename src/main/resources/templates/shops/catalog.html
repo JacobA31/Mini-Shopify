@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head(${catalog.shopName})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <h1 th:text="${catalog.shopName}">Shop name</h1>
+    <p class="muted" th:if="${catalog.shopDescription}" th:text="${catalog.shopDescription}">Shop description</p>
+
+    <h2>Products</h2>
+
+    <p th:if="${catalog.empty}" class="muted">This shop has no products yet.</p>
+
+    <ul th:unless="${catalog.empty}" class="product-grid">
+        <li th:each="item : ${catalog.items}" class="product-card"
+            th:classappend="${item.inStock} ? '' : 'out-of-stock'">
+            <h3 th:text="${item.name}">Product name</h3>
+            <p th:if="${item.description}" th:text="${item.description}">Description</p>
+            <p class="price" th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 'COMMA', 2, 'POINT')}">$0.00</p>
+            <p class="stock" th:if="${item.inStock}" th:text="${item.inventory} + ' in stock'">3 in stock</p>
+            <p class="stock" th:unless="${item.inStock}">Out of stock</p>
+        </li>
+    </ul>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
