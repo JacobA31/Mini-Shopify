@@ -17,7 +17,7 @@
 
     <ul class="shop-list" th:if="${shops != null}">
         <li class="shop-card" th:each="shop : ${shops}">
-            <strong th:text="${shop.name}">Shop name</strong>
+            <strong><a th:href="@{/shops/{id}/catalog(id=${shop.id})}" th:text="${shop.name}">Shop name</a></strong>
             <p th:text="${shop.description}">Description</p>
             <span class="shop-tag" th:each="tag : ${shop.tags}" th:text="${tag.name}">tag</span>
         </li>
