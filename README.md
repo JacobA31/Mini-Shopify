@@ -47,11 +47,11 @@ java -jar target/mini-shopify.jar
 
 ## Current state
 
-_Summarised from the [Kanban board](https://github.com/users/JacobA31/projects/4) on 2026-11-03.
+_Summarised from the [Kanban board](https://github.com/users/JacobA31/projects/4) on 2026-11-11.
 Keep this in sync with the board before every milestone._
 
 **Sprint 1 ([Sprint 1 – Prototype](https://github.com/JacobA31/Mini-Shopify/milestone/1), demo Nov 12):**
-4 of 8 issues completed (the project setup). The 4 feature issues are assigned and in the backlog.
+All 9 issues completed: the project setup, the 4 feature issues, and integration tests for every feature.
 
 | Column        | Issue                                                                                                         |   Owner           |
 |---------------|---------------------------------------------------------------------------------------------------------------|----------------|
@@ -65,10 +65,12 @@ Keep this in sync with the board before every milestone._
 | Completed     | [#10](https://github.com/JacobA31/Mini-Shopify/issues/10) View a shop's product catalog                       | BouaklineMahdi  |
 | Completed     | [#16](https://github.com/JacobA31/Mini-Shopify/issues/16) Milestone 1: Integration testing                    | everyone        |
 
-**What works today:** the Spring Boot skeleton builds, and CI runs the tests on every pull request and
-every push to `main`. Every push to `main` is also deployed automatically to the
-[live app](https://mini-shopify-hhamccftdqg3fegq.canadacentral-01.azurewebsites.net/) on Azure.
-No shop features are merged yet, so the live app shows only the home page.
+**What works today:** a merchant can create a shop with a name, description, and tags, and add
+products with a description, price, and inventory. A customer can search shops by name or tag and
+click a result to browse that shop's product catalog. Every feature has unit and integration tests,
+and CI runs them on every pull request and every push to `main`. Every push to `main` is also deployed
+automatically to the [live app](https://mini-shopify-hhamccftdqg3fegq.canadacentral-01.azurewebsites.net/)
+on Azure.
 
 ## Plan for next sprint
 
