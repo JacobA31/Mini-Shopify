@@ -1,4 +1,4 @@
-package com.minishopify;
+package com.minishopify.integration;
 
 import com.minishopify.model.Product;
 import com.minishopify.model.Shop;
