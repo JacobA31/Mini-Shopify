@@ -1,15 +1,16 @@
 package com.minishopify.service;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.minishopify.dto.ProductForm;
 import com.minishopify.model.Product;
 import com.minishopify.model.Shop;
 import com.minishopify.repository.ProductRepository;
 import com.minishopify.repository.ShopRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.NoSuchElementException;
 
 // Handles product related work
 @Service
@@ -49,5 +50,10 @@ public class ProductService {
     @Transactional(readOnly = true)
     public List<Product> getProductsForShop(Long shopId) {
         return productRepository.findByShopId(shopId);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean nameTakenInShop(Long shopId, String name) {
+        return productRepository.existsByShopIdAndNameIgnoreCase(shopId, name.trim());
     }
 }
