@@ -51,3 +51,107 @@ body {
     font-size: 0.875rem;
     text-align: center;
 }
+
+
+.muted {
+    color: var(--color-muted);
+}
+
+/* Product catalog (shops/catalog.html) */
+.product-grid {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.product-card {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.product-card h3 {
+    margin: 0 0 0.5rem;
+}
+
+.product-card .price {
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.product-card .stock {
+    font-size: 0.875rem;
+    color: var(--color-muted);
+}
+
+.product-card.out-of-stock {
+    opacity: 0.6;
+}
+
+/* ---- Cart part starts here ---- */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.flash {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+}
+
+.flash-success {
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+}
+
+.flash-error {
+    background: #fdecea;
+    border: 1px solid #f5b7b1;
+    color: #a40000;
+}
+
+.inline-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.inline-form input[type="number"] {
+    width: 4.5rem;
+    padding: 0.3rem;
+    font: inherit;
+}
+
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cart-table th,
+.cart-table td {
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.cart-table tfoot th,
+.cart-total {
+    font-weight: 700;
+}
+
+.link-button {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: #a40000;
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
+}
