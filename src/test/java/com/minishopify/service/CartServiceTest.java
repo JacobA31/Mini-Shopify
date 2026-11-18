@@ -144,6 +144,17 @@ class CartServiceTest {
     }
 
     @Test
+    void clearCartRemovesAllProducts() {
+        cart.setQuantity(10L, 2);
+        cart.setQuantity(11L, 1);
+
+        cartService.clearCart();
+
+        assertThat(cart.isEmpty()).isTrue();
+        assertThat(cart.getTotalQuantity()).isZero();
+    }
+
+    @Test
     void getCartBuildsLinesAndTotals() {
         cart.setQuantity(10L, 2);
         cart.setQuantity(11L, 1);
