@@ -1,5 +1,6 @@
 package com.minishopify.model;
 
+import com.minishopify.exception.InsufficientInventoryException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -32,6 +34,9 @@ public class Product {
 
     @Column(nullable = false)
     private int inventory;
+
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "shop_id", nullable = false)
@@ -71,5 +76,16 @@ public class Product {
 
     public Shop getShop() {
         return shop;
+    }
+
+    /** Reduces available inventory after validating the requested quantity. */
+    public void decrementInventory(int quantity) {
+        if (quantity < 1) {
+            throw new IllegalArgumentException("Quantity must be at least 1.");
+        }
+        if (quantity > inventory) {
+            throw new InsufficientInventoryException(name, inventory);
+        }
+        inventory -= quantity;
     }
 }
