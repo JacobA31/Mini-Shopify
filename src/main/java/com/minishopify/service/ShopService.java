@@ -31,13 +31,7 @@ public class ShopService {
     public Shop createShop(ShopForm form) {
         String shopName = form.getName().trim();
         Shop shop = new Shop(shopName, form.getDescription());
-
-        for (String tagName : normalizeTags(form.getTags())) {
-            Tag tag = tagRepository.findByName(tagName)
-                    .orElseGet(() -> tagRepository.save(new Tag(tagName)));
-            shop.addTag(tag);
-        }
-
+        addTags(shop, form.getTags());
         return shopRepository.save(shop);
     }
 
@@ -52,6 +46,14 @@ public class ShopService {
         Set<Shop> results = new LinkedHashSet<>(shopRepository.findByNameContainingIgnoreCase(keyword));
         results.addAll(shopRepository.findByTags_NameIgnoreCase(keyword));
         return new ArrayList<>(results);
+    }
+
+    private void addTags(Shop shop, Iterable<String> submittedTags) {
+        for (String tagName : normalizeTags(submittedTags)) {
+            Tag tag = tagRepository.findByName(tagName)
+                    .orElseGet(() -> tagRepository.save(new Tag(tagName)));
+            shop.addTag(tag);
+        }
     }
 
     private Set<String> normalizeTags(Iterable<String> submittedTags) {
