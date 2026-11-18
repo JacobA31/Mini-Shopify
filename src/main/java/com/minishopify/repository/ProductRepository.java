@@ -1,11 +1,14 @@
 package com.minishopify.repository;
 
-import com.minishopify.model.Product;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import com.minishopify.model.Product;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByShopId(Long shopId);
+
+    boolean existsByShopIdAndNameIgnoreCase(Long shopId, String name);
 }

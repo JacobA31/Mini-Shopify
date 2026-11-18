@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Your cart')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <h1>Your cart</h1>
+
+    <p class="flash flash-error" th:if="${cartError}" th:text="${cartError}">Only 2 in stock.</p>
+
+    <p th:if="${cart.empty}" class="muted">
+        Your cart is empty. <a th:href="@{/}">Find a shop</a> to start shopping.
+    </p>
+
+    <table th:unless="${cart.empty}" class="cart-table">
+        <thead>
+        <tr>
+            <th scope="col">Product</th>
+            <th scope="col">Price</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Subtotal</th>
+            <th scope="col"><span class="visually-hidden">Remove</span></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="line : ${cart.lines}">
+            <td>
+                <strong th:text="${line.productName}">Product</strong><br>
+                <a class="muted" th:href="@{/shops/{id}/catalog(id=${line.shopId})}"
+                   th:text="${line.shopName}">Shop</a>
+            </td>
+            <td th:text="'$' + ${#numbers.formatDecimal(line.unitPrice, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+            <td>
+                <form class="inline-form" th:action="@{/cart/update}" method="post">
+                    <input type="hidden" name="productId" th:value="${line.productId}">
+                    <label class="visually-hidden" th:for="'qty-' + ${line.productId}">Quantity</label>
+                    <input type="number" name="quantity" min="0" th:max="${line.available}"
+                           th:id="'qty-' + ${line.productId}" th:value="${line.quantity}">
+                    <button type="submit">Update</button>
+                </form>
+            </td>
+            <td th:text="'$' + ${#numbers.formatDecimal(line.lineTotal, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+            <td>
+                <form th:action="@{/cart/remove}" method="post">
+                    <input type="hidden" name="productId" th:value="${line.productId}">
+                    <button type="submit" class="link-button">Remove</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <th scope="row" colspan="3"
+                th:text="'Total (' + ${cart.totalQuantity} + (${cart.totalQuantity} == 1 ? ' item)' : ' items)')">Total</th>
+            <td class="cart-total"
+                th:text="'$' + ${#numbers.formatDecimal(cart.total, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+            <td></td>
+        </tr>
+        </tfoot>
+    </table>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

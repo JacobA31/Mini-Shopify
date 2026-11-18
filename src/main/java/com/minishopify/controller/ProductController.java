@@ -54,6 +54,11 @@ public class ProductController {
             model.addAttribute("shop", productService.getShop(shopId));
             return "products/new";
         }
+        if (productService.nameTakenInShop(shopId, productForm.getName())) {
+            bindingResult.rejectValue("name", "duplicate", "This shop already has a product with that name");
+            model.addAttribute("shop", productService.getShop(shopId));
+            return "products/new";
+        }
 
         Product addedProduct = productService.addProduct(shopId, productForm);
         redirectAttributes.addFlashAttribute("addedProductName", addedProduct.getName());
