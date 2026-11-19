@@ -66,4 +66,13 @@ public class Shop {
         tags.add(Objects.requireNonNull(tag, "tag must not be null"));
     }
 
+    public void update(String name, String description) {
+        this.name = Objects.requireNonNull(name, "name must not be null");
+        this.description = description;
+    }
+
+    public void clearTags() {
+        tags.clear();
+    }
+
 }
