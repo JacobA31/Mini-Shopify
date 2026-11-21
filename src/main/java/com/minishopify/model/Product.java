@@ -72,4 +72,11 @@ public class Product {
     public Shop getShop() {
         return shop;
     }
+
+    public void update(String name, String description, BigDecimal price, int inventory) {
+        this.name = Objects.requireNonNull(name, "name must not be null");
+        this.description = description;
+        this.price = Objects.requireNonNull(price, "price must not be null");
+        this.inventory = inventory;
+    }
 }
