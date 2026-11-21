@@ -112,6 +112,8 @@ classDiagram
         String description
         BigDecimal price
         int inventory
+        byte[] image
+        String imageContentType
     }
     Shop "*" -- "*" Tag : tags
     Product "*" --> "1" Shop : shop
@@ -140,6 +142,8 @@ erDiagram
         VARCHAR(255) description
         DECIMAL price
         INTEGER inventory
+        BLOB image
+        VARCHAR(255) image_content_type
         BIGINT shop_id FK
     }
 
