@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import java.io.ByteArrayOutputStream;
+import java.util.Map;
 
 /**
  * Integration tests for adding products to a shop: exercise the real HTTP routes, rendered pages,
@@ -54,6 +56,38 @@ class ProductIntegrationTest {
             .header("Accept", "text/html")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .POST(HttpRequest.BodyPublishers.ofString(body))
+            .build();
+        return http.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpResponse<byte[]> getBytes(String path) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
+            .build();
+        return http.send(request, HttpResponse.BodyHandlers.ofByteArray());
+    }
+
+    private HttpResponse<String> postMultipart(String path, Map<String, String> fields,
+                                               String fileField, String fileName,
+                                               String fileType, byte[] fileBytes) throws Exception {
+        String boundary = "----ProductTest" + UUID.randomUUID();
+        ByteArrayOutputStream body = new ByteArrayOutputStream();
+
+        for (Map.Entry<String, String> field : fields.entrySet()) {
+            body.write(("--" + boundary + "\r\n"
+                + "Content-Disposition: form-data; name=\"" + field.getKey() + "\"\r\n\r\n"
+                + field.getValue() + "\r\n").getBytes(StandardCharsets.UTF_8));
+        }
+
+        body.write(("--" + boundary + "\r\n"
+            + "Content-Disposition: form-data; name=\"" + fileField + "\"; filename=\"" + fileName + "\"\r\n"
+            + "Content-Type: " + fileType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+        body.write(fileBytes);
+        body.write(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+
+        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
+            .header("Accept", "text/html")
+            .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+            .POST(HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()))
             .build();
         return http.send(request, HttpResponse.BodyHandlers.ofString());
     }
@@ -139,6 +173,34 @@ class ProductIntegrationTest {
         assertThat(getPage("/shops/999999999/products/new").statusCode()).isEqualTo(404);
         assertThat(postForm("/shops/999999999/products", productForm("Dark Roast", "12.50", "5")).statusCode())
             .isEqualTo(404);
+    }
+
+    @Test
+    void uploadedImageIsStoredAndServedBackWithItsContentType() throws Exception {
+        Shop shop = createShop();
+        String productName = "Dark Roast " + UUID.randomUUID();
+        byte[] image = new byte[1000];
+        for (int i = 0; i < image.length; i++) {
+            image[i] = (byte) i;
+        }
+
+        HttpResponse<String> submission = postMultipart(
+            "/shops/" + shop.getId() + "/products",
+            Map.of("name", productName, "description", "Fresh beans", "price", "12.50", "inventory", "5"),
+            "image", "beans.png", "image/png", image);
+
+        assertThat(submission.statusCode()).isBetween(300, 399);
+
+        List<Product> savedProducts = productRepository.findByShopId(shop.getId());
+        assertThat(savedProducts).hasSize(1);
+        String imagePath = "/shops/" + shop.getId() + "/products/" + savedProducts.get(0).getId() + "/image";
+
+        HttpResponse<byte[]> served = getBytes(imagePath);
+        assertThat(served.statusCode()).isEqualTo(200);
+        assertThat(served.headers().firstValue("Content-Type")).contains("image/png");
+        assertThat(served.body()).isEqualTo(image);
+
+        assertThat(getPage("/shops/" + shop.getId() + "/products").body()).contains(imagePath);
     }
 
 }
