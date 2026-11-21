@@ -103,6 +103,8 @@ public class Product {
     public void setImage(byte[] image, String imageContentType) {
         this.image = Objects.requireNonNull(image, "image must not be null");
         this.imageContentType = Objects.requireNonNull(imageContentType, "imageContentType must not be null");
+    }
+
     /** Reduces available inventory after validating the requested quantity. */
     public void decrementInventory(int quantity) {
         if (quantity < 1) {
