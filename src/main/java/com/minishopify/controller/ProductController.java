@@ -5,6 +5,8 @@ import com.minishopify.model.Product;
 import com.minishopify.service.ProductService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -69,6 +71,16 @@ public class ProductController {
     public void handleShopNotFound(NoSuchElementException exception, HttpServletResponse response)
         throws IOException {
         response.sendError(HttpServletResponse.SC_NOT_FOUND, exception.getMessage());
+    }
+
+    @GetMapping("/shops/{shopId}/products/{productId}/image")
+    public ResponseEntity<byte[]> showProductImage(@PathVariable Long shopId, @PathVariable Long productId) {
+        Product product = productService.getProductWithImage(shopId, productId);
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(product.getImageContentType()))
+            .header("X-Content-Type-Options", "nosniff")
+            .body(product.getImage());
     }
 
 }

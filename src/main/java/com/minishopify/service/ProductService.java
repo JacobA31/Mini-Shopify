@@ -1,6 +1,9 @@
 package com.minishopify.service;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
@@ -11,6 +14,7 @@ import com.minishopify.model.Product;
 import com.minishopify.model.Shop;
 import com.minishopify.repository.ProductRepository;
 import com.minishopify.repository.ShopRepository;
+import org.springframework.web.multipart.MultipartFile;
 
 // Handles product related work
 @Service
@@ -24,7 +28,6 @@ public class ProductService {
         this.shopRepository = shopRepository;
     }
 
-    // Finds a shop by id, or throws if it does not exist
     @Transactional(readOnly = true)
     public Shop getShop(Long shopId) {
         return shopRepository.findById(shopId)
@@ -43,6 +46,15 @@ public class ProductService {
             form.getPrice(),
             form.getInventory());
 
+        MultipartFile image = form.getImage();
+        if (image != null && !image.isEmpty()) {
+            try {
+                product.setImage(image.getBytes(), image.getContentType().toLowerCase(Locale.ROOT));
+            } catch (IOException e) {
+                throw new UncheckedIOException("Could not read the uploaded image", e);
+            }
+        }
+
         return productRepository.save(product);
     }
 
@@ -55,5 +67,16 @@ public class ProductService {
     @Transactional(readOnly = true)
     public boolean nameTakenInShop(Long shopId, String name) {
         return productRepository.existsByShopIdAndNameIgnoreCase(shopId, name.trim());
+    }
+
+    @Transactional(readOnly = true)
+    public Product getProductWithImage(Long shopId, Long productId) {
+        Product product = productRepository.findByIdAndShopId(productId, shopId)
+            .orElseThrow(() -> new NoSuchElementException("Product not found: " + productId));
+
+        if (!product.hasImage()) {
+            throw new NoSuchElementException("Product has no image: " + productId);
+        }
+        return product;
     }
 }
