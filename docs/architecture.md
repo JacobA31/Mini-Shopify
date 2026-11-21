@@ -11,8 +11,9 @@ implemented yet. The README's UML and DB schema sections describe what actually 
 | Language        | Java 17                                  | LTS, supported by Spring Boot 4 and Azure App Service  |
 | Framework       | Spring Boot 4.1 (Spring MVC)             | Required by the course                                 |
 | Views           | Thymeleaf (server-side rendered HTML)    | Fits Spring MVC; no separate frontend build            |
-| Persistence     | Spring Data JPA + Hibernate              | ORM generates the schema from our `@Entity` classes    |
-| Database        | H2 (in-memory)                           | Zero setup; see [Open decisions](#open-decisions)      |
+| Persistence     | Spring Data JPA + Hibernate              | ORM maps our `@Entity` classes to tables               |
+| Schema          | Flyway migrations (`db/migration`)       | Versioned schema changes that keep the live data       |
+| Database        | H2: in memory locally, a file on Azure   | Zero setup; see [Open decisions](#open-decisions)      |
 | Build           | Maven (via `./mvnw` wrapper)             | `pom.xml` in the root, as required                     |
 | CI/CD           | GitHub Actions → Azure App Service       | Test every PR, deploy every merge to `main`            |
 | Tests           | JUnit 5, Mockito, MockMvc, AssertJ       | Included in the Spring Boot test starters              |
@@ -37,15 +38,18 @@ flowchart LR
 ```
 src/main/java/com/minishopify/
 ├── MiniShopifyApplication.java   Spring Boot entry point
-├── model/        @Entity classes. Source of the DB schema and the README UML diagram.
+├── model/        @Entity classes. Must match the Flyway migrations; source of the README UML diagram.
 ├── repository/   Spring Data JPA interfaces (ShopRepository, ProductRepository, ...)
 ├── service/      Use cases and business rules; @Transactional boundaries
 ├── controller/   @Controller classes: thin, call a service, return a view name
 ├── dto/          Form objects bound to HTML forms, with Bean Validation annotations
-└── exception/    Custom exceptions + @ControllerAdvice error handling
+├── exception/    Custom exceptions + @ControllerAdvice error handling
+└── config/       Startup and configuration code (DemoDataSeeder)
 
 src/main/resources/
-├── application.properties
+├── application.properties          Settings for local runs and tests (in-memory H2)
+├── application-azure.properties    Overrides for the live app (H2 file on /home)
+├── db/migration/ Flyway migrations V1__..., V2__...: the DB schema (see CONTRIBUTING.md)
 ├── templates/    Thymeleaf views, one folder per feature (shops/, products/, cart/, ...)
 │   └── fragments/layout.html   Shared <head>, header, and footer
 └── static/       CSS, JS, images
@@ -143,11 +147,21 @@ Every PR that adds behaviour should add tests. `./mvnw verify` runs all of them,
 
 To decide as a team (record the outcome here):
 
-1. **Persistence on Azure.** In-memory H2 loses all data on every deploy and restart.
-   Options: (a) keep in-memory and seed demo data on startup with a `CommandLineRunner`;
-   (b) H2 file stored on Azure's persistent `/home` disk
-   (`spring.datasource.url=jdbc:h2:file:/home/data/minishopify` plus `ddl-auto=update` in an
-   Azure-only profile); (c) Azure Database for PostgreSQL (more setup, costs credits).
+1. **Persistence on Azure.** ✅ *Decided in Sprint 2 (#21).* In-memory H2 lost all data on every
+   deploy and restart. Options were: (a) keep in-memory and seed demo data on startup;
+   (b) H2 file on Azure's persistent `/home` disk; (c) Azure Database for PostgreSQL.
+   **Outcome: (b), plus seeding and Flyway.**
+   - The `azure` profile (`application-azure.properties`, turned on by the App Service setting
+     `SPRING_PROFILES_ACTIVE=azure`) uses `jdbc:h2:file:/home/data/minishopify`. Local runs and tests
+     keep in-memory H2.
+   - The schema is managed by Flyway migrations, with `ddl-auto=validate`. `ddl-auto=update` was
+     rejected: on a database that keeps its data, it can't rename or drop columns, and it fails on
+     new `not null` columns once tables have rows.
+   - `DemoDataSeeder` adds demo shops and products on startup when there are no shops, so the live
+     app is never empty. Turned off in tests (`minishopify.seed.enabled=false`).
+   - Why not PostgreSQL: free, no extra Azure resource, and the same engine we use locally.
+     Trade-off: H2 allows only one process to open the file, so the App Service must stay at one
+     instance. If deploys start failing with `Database may be already in use`, revisit (c).
 2. **Authentication.** Start without login (anyone can create a shop or buy), then add
    Spring Security with `MERCHANT` and `CUSTOMER` roles if time allows. Adding login later
    means `Shop` gains an owner relationship.
