@@ -59,6 +59,10 @@
         </tr>
         </tfoot>
     </table>
+
+    <form th:unless="${cart.empty}" th:action="@{/checkout}" method="post" class="checkout-actions">
+        <button type="submit">Checkout</button>
+    </form>
 </main>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
