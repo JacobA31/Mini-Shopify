@@ -77,6 +77,11 @@ public class CartService {
         cart.remove(productId);
     }
 
+    /** Clears the current visitor's cart after a successful checkout. */
+    public void clearCart() {
+        cart.clear();
+    }
+
     /**
      * Loads the cart's products with their current names, prices, shops, and stock.
      * Products that no longer exist are dropped from the cart.
