@@ -11,8 +11,8 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import java.util.Optional;
 
 @DataJpaTest
 class ProductRepositoryTest {
@@ -83,5 +83,51 @@ class ProductRepositoryTest {
         assertEquals(0, new BigDecimal("25.00").compareTo(found.getPrice()));
         assertEquals(100, found.getInventory());
         assertEquals(emptyShop.getId(), found.getShop().getId());
+    }
+
+    @Test
+    void findByIdAndShopIdReturnsTheProductOfThatShop() {
+        Shop shop = shopRepository.findById(emptyShop.getId()).orElseThrow();
+        Product saved = productRepository.save(
+            new Product(shop, "Gift Card", "Digital", new BigDecimal("25.00"), 100));
+        entityManager.flush();
+        entityManager.clear();
+
+        Optional<Product> found = productRepository.findByIdAndShopId(saved.getId(), emptyShop.getId());
+
+        assertTrue(found.isPresent());
+        assertEquals("Gift Card", found.get().getName());
+    }
+
+    @Test
+    void findByIdAndShopIdDoesNotFindAnotherShopsProduct() {
+        Shop shop = shopRepository.findById(emptyShop.getId()).orElseThrow();
+        Product saved = productRepository.save(
+            new Product(shop, "Gift Card", "Digital", new BigDecimal("25.00"), 100));
+        entityManager.flush();
+        entityManager.clear();
+
+        assertTrue(productRepository.findByIdAndShopId(saved.getId(), bookShop.getId()).isEmpty());
+    }
+
+    @Test
+    void savedImageKeepsItsBytesAndContentType() {
+        Shop shop = shopRepository.findById(emptyShop.getId()).orElseThrow();
+        // 1000 bytes on purpose: it proves the column is not cut off at the default 255
+        byte[] bytes = new byte[1000];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) i;
+        }
+        Product product = new Product(shop, "Gift Card", "Digital", new BigDecimal("25.00"), 100);
+        product.setImage(bytes, "image/png");
+        Product saved = productRepository.save(product);
+        entityManager.flush();
+        entityManager.clear();
+
+        Product found = productRepository.findById(saved.getId()).orElseThrow();
+
+        assertTrue(found.hasImage());
+        assertArrayEquals(bytes, found.getImage());
+        assertEquals("image/png", found.getImageContentType());
     }
 }

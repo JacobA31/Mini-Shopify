@@ -112,6 +112,8 @@ classDiagram
         String description
         BigDecimal price
         int inventory
+        byte[] image
+        String imageContentType
         Long version
     }
     class CustomerOrder {
@@ -153,6 +155,8 @@ erDiagram
         VARCHAR(255) description
         DECIMAL price "precision 10, scale 2"
         INTEGER inventory
+        BLOB image
+        VARCHAR(255) image_content_type
         BIGINT version
         BIGINT shop_id FK
     }

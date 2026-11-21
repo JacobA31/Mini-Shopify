@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Version;
 
 import java.math.BigDecimal;
@@ -41,6 +42,14 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
+
+    // Product image, stored in database (null when the product has no image)
+    @Lob
+    @Column(name = "image")
+    private byte[] image;
+
+    @Column(name = "image_content_type")
+    private String imageContentType;
 
     // Required by JPA
     protected Product() {
@@ -76,6 +85,24 @@ public class Product {
 
     public Shop getShop() {
         return shop;
+    }
+
+    public byte[] getImage() {
+        return image;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public boolean hasImage() {
+        return image != null && image.length > 0;
+    }
+
+    // Sets the image and its content type together
+    public void setImage(byte[] image, String imageContentType) {
+        this.image = Objects.requireNonNull(image, "image must not be null");
+        this.imageContentType = Objects.requireNonNull(imageContentType, "imageContentType must not be null");
     }
 
     /** Reduces available inventory after validating the requested quantity. */
