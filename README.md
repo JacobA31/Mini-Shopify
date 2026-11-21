@@ -37,6 +37,11 @@ Requires JDK 17+. Maven is not required; the wrapper downloads it.
 java -jar target/mini-shopify.jar
 ```
 
+Locally the database is in memory and starts with a few demo shops and products. On Azure it is an
+H2 file that survives restarts and redeploys. The schema comes from the Flyway migrations in
+`src/main/resources/db/migration`: **if you change an entity, add a migration**
+(see [CONTRIBUTING.md](CONTRIBUTING.md#changing-the-database-schema)).
+
 ## Milestones
 
 | Milestone           | Demo date | Goal                                              |
@@ -118,6 +123,9 @@ classDiagram
 ```
 
 ## Database schema
+
+Created by the Flyway migrations in `src/main/resources/db/migration` (Flyway's own
+`flyway_schema_history` table is not shown).
 
 ```mermaid
 erDiagram
