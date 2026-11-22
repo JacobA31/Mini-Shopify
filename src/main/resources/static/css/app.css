@@ -155,38 +155,23 @@ body {
     font: inherit;
     text-decoration: underline;
 }
-/* ---- Edit product: red × to remove the current image ---- */
-.image-preview {
-    display: inline-block;
-    position: relative;
-}
 
-.image-preview img {
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    display: block;
+/* Edit product: red × in the image's top-right corner */
+.image-preview {
+    position: relative;
+    display: inline-block;
 }
 
 .remove-image-button {
-    align-items: center;
-    background: rgba(211, 47, 47, 0.6); /* red, see-through */
-    border: 2px solid #fff;
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 0;
     border-radius: 50%;
+    background: rgba(211, 47, 47, 0.6);
     color: #fff;
     cursor: pointer;
-    display: flex;
-    font-size: 1rem;
-    height: 1.6rem;
-    justify-content: center;
-    line-height: 1;
-    padding: 0;
-    position: absolute;
-    right: -0.6rem;
-    top: -0.6rem;
-    width: 1.6rem;
-}
-
-.remove-image-button:hover,
-.remove-image-button:focus-visible {
-    background: rgba(183, 28, 28, 0.9); /* stronger on hover so it is clear what you are clicking */
 }

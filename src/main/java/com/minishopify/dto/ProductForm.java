@@ -30,7 +30,6 @@ public class ProductForm {
     @ValidImage
     private MultipartFile image;
 
-    // Edit form only: the "Remove current image" checkbox
     private boolean removeImage;
 
     public String getName() { return name; }

@@ -132,7 +132,6 @@ class ShopServiceTest {
         when(shopRepository.findById(1L)).thenReturn(Optional.of(shop));
         when(tagRepository.findByName("coffee")).thenReturn(Optional.of(coffee));
 
-        // Same details as saved; the empty description box counts as "no description"
         ShopForm form = new ShopForm();
         form.setName("Corner Store ");
         form.setDescription("");

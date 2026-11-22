@@ -62,7 +62,6 @@ class EditShopIntegrationTest {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
-    // A shop with tags, created the same way the "Create a shop" form does it
     private Shop createShop(String... tags) {
         ShopForm form = new ShopForm();
         form.setName("Edit Test Shop " + UUID.randomUUID());
@@ -97,7 +96,6 @@ class EditShopIntegrationTest {
         URI detailsPageUri = URI.create(submission.headers().firstValue("Location").orElseThrow());
         assertThat(detailsPageUri.getPath()).startsWith("/shops/" + shop.getId());
 
-        // The Shop details page shows what was saved: trimmed name, description, and lowercase tags
         HttpResponse<String> detailsPage = getPage(detailsPageUri.getRawPath());
         assertThat(detailsPage.statusCode()).isEqualTo(200);
         assertThat(detailsPage.body())

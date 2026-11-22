@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 
 // Handles shop related work
@@ -49,7 +50,6 @@ public class ShopService {
         return toForm(getShop(shopId));
     }
 
-    // Replaces the shop's info with the new form data.
     // Returns false when the merchant saved without changing anything.
     @Transactional
     public boolean updateShop(Long shopId, ShopForm form) {
@@ -65,13 +65,8 @@ public class ShopService {
 
     private static boolean sameDetails(ShopForm a, ShopForm b) {
         return a.getName().equals(b.getName())
-                && blankToEmpty(a.getDescription()).equals(blankToEmpty(b.getDescription()))
+                && Objects.toString(a.getDescription(), "").equals(Objects.toString(b.getDescription(), ""))
                 && a.getTags().equals(b.getTags());
-    }
-
-    // An empty description box and no description count as the same
-    private static String blankToEmpty(String text) {
-        return text == null ? "" : text.strip();
     }
 
     public boolean hasShops() {

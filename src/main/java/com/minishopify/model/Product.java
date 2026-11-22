@@ -112,7 +112,6 @@ public class Product {
         this.imageContentType = Objects.requireNonNull(imageContentType, "imageContentType must not be null");
     }
 
-    // Removes the image, so the product shows "No image" again
     public void removeImage() {
         this.image = null;
         this.imageContentType = null;

@@ -35,7 +35,7 @@
         </div>
 
         <div class="form-field">
-            <div th:if="${hasImage}" id="current-image">
+            <div th:if="${hasImage}" th:hidden="${productForm.removeImage}" id="current-image">
                 <p>Current image:</p>
                 <div class="image-preview">
                     <img th:src="@{/shops/{shopId}/products/{productId}/image(shopId=${shop.id},productId=${productId})}"
@@ -45,11 +45,6 @@
                             aria-label="Remove image">&times;</button>
                 </div>
             </div>
-            <p th:if="${hasImage}" id="image-removed-message" class="field-help" hidden>
-                The image will be removed when you save.
-                <button type="button" class="link-button" id="undo-remove-image">Undo</button>
-            </p>
-            <!-- Set to "true" by the × button (see product-form.js) -->
             <input type="hidden" id="remove-image" name="removeImage" th:value="${productForm.removeImage}">
             <label for="image" th:text="${hasImage} ? 'Replace image (optional)' : 'Image (optional)'">Image (optional)</label>
             <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/gif,image/webp">

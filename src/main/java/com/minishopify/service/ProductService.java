@@ -51,7 +51,6 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    // Stores an uploaded image on the product. An empty upload leaves the current image as it is.
     private static void attachImage(Product product, MultipartFile image) {
         if (image == null || image.isEmpty()) {
             return;
@@ -100,7 +99,6 @@ public class ProductService {
             form.getPrice(),
             form.getInventory());
 
-        // A newly uploaded image wins over the "Remove current image" checkbox
         boolean newImageUploaded = form.getImage() != null && !form.getImage().isEmpty();
         if (form.isRemoveImage() && !newImageUploaded) {
             product.removeImage();
@@ -110,7 +108,6 @@ public class ProductService {
         return product;
     }
 
-    // Whether the product has an image, so the edit page can show it. Throws ProductNotFoundException like getProduct.
     @Transactional(readOnly = true)
     public boolean productHasImage(Long shopId, Long productId) {
         return getProduct(shopId, productId).hasImage();
