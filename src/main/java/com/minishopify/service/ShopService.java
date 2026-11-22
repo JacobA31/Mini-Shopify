@@ -1,5 +1,6 @@
 package com.minishopify.service;
 
+import com.minishopify.dto.ShopDetails;
 import com.minishopify.dto.ShopForm;
 import com.minishopify.exception.ShopNotFoundException;
 import com.minishopify.model.Shop;
@@ -50,20 +51,25 @@ public class ShopService {
         return toForm(getShop(shopId));
     }
 
+    @Transactional(readOnly = true)
+    public ShopDetails getShopDetails(Long shopId) {
+        return toDetails(getShop(shopId));
+    }
+
     // Returns false when the merchant saved without changing anything.
     @Transactional
     public boolean updateShop(Long shopId, ShopForm form) {
         Shop shop = getShop(shopId);
-        ShopForm before = toForm(shop);
+        ShopDetails before = toDetails(shop);
 
         shop.update(form.getName().trim(), form.getDescription());
         shop.clearTags();
         addTags(shop, form.getTags());
 
-        return !sameDetails(before, toForm(shop));
+        return !sameDetails(before, toDetails(shop));
     }
 
-    private static boolean sameDetails(ShopForm a, ShopForm b) {
+    private static boolean sameDetails(ShopDetails a, ShopDetails b) {
         return a.getName().equals(b.getName())
                 && Objects.toString(a.getDescription(), "").equals(Objects.toString(b.getDescription(), ""))
                 && a.getTags().equals(b.getTags());
@@ -86,8 +92,16 @@ public class ShopService {
         ShopForm form = new ShopForm();
         form.setName(shop.getName());
         form.setDescription(shop.getDescription());
-        form.setTags(shop.getTags().stream().map(Tag::getName).sorted().toList());
+        form.setTags(sortedTagNames(shop));
         return form;
+    }
+
+    private static ShopDetails toDetails(Shop shop) {
+        return new ShopDetails(shop.getId(), shop.getName(), shop.getDescription(), sortedTagNames(shop));
+    }
+
+    private static List<String> sortedTagNames(Shop shop) {
+        return shop.getTags().stream().map(Tag::getName).sorted().toList();
     }
 
     private void addTags(Shop shop, Iterable<String> submittedTags) {

@@ -93,7 +93,7 @@ public class ShopController {
     // The merchant's page for one shop with its info
     @GetMapping("/shops/{shopId}")
     public String showShopDetails(@PathVariable Long shopId, Model model) {
-        model.addAttribute("shopDetails", shopService.getShopForm(shopId));
+        model.addAttribute("shopDetails", shopService.getShopDetails(shopId));
         model.addAttribute("shopId", shopId);
         return "shops/details";
     }
