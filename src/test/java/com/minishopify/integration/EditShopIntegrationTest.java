@@ -94,11 +94,18 @@ class EditShopIntegrationTest {
                 + "&tags=" + formValue(newTag.toUpperCase()));
 
         assertThat(submission.statusCode()).isBetween(300, 399);
-        assertThat(URI.create(submission.headers().firstValue("Location").orElseThrow()).getPath())
-            .startsWith("/shops/" + shop.getId() + "/products");
+        URI updatedPageUri = URI.create(submission.headers().firstValue("Location").orElseThrow());
+        assertThat(updatedPageUri.getPath()).startsWith("/shops/" + shop.getId() + "/updated");
 
-        HttpResponse<String> productsPage = getPage("/shops/" + shop.getId() + "/products");
-        assertThat(productsPage.body()).contains(newName);
+        HttpResponse<String> updatedPage = getPage(updatedPageUri.getRawPath());
+        assertThat(updatedPage.statusCode()).isEqualTo(200);
+        assertThat(updatedPage.body())
+            .contains("Shop updated")
+            .contains(newName)
+            .contains("After editing")
+            .contains(keptTag)
+            .contains(newTag)
+            .doesNotContain(oldTag);
 
         Shop saved = shopRepository.findById(shop.getId()).orElseThrow();
         assertThat(saved.getName()).isEqualTo(newName);

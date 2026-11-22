@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Shop updated')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <h1>Shop updated</h1>
+    <h2 th:text="${updatedShopName}">Shop name</h2>
+
+    <p th:if="${updatedShopDescription != null and !#strings.isEmpty(updatedShopDescription)}"
+       th:text="${updatedShopDescription}"></p>
+    <p th:if="${updatedShopDescription == null or #strings.isEmpty(updatedShopDescription)}">
+        No description.
+    </p>
+
+    <section aria-labelledby="shop-tags-heading">
+        <h3 id="shop-tags-heading">Tags</h3>
+        <ul th:if="${!#lists.isEmpty(updatedShopTags)}">
+            <li th:each="tag : ${updatedShopTags}" th:text="${tag}">tag</li>
+        </ul>
+        <p th:if="${#lists.isEmpty(updatedShopTags)}">No tags.</p>
+    </section>
+
+    <a th:href="@{/shops/{id}/edit(id=${shopId})}">Edit shop details</a>
+
+    <a th:href="@{/shops/{id}/products/new(id=${shopId})}">Add products to this shop</a>
+
+    <a th:href="@{/shops/{id}/products(id=${shopId})}">View products</a>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -83,9 +83,22 @@ public class ShopController {
             return "shops/edit";
         }
 
-        Shop updatedShop = shopService.updateShop(shopId, shopForm);
-        redirectAttributes.addFlashAttribute("updatedShopName", updatedShop.getName());
-        return "redirect:/shops/" + shopId + "/products";
+        shopService.updateShop(shopId, shopForm);
+
+        ShopForm savedShop = shopService.getShopForm(shopId);
+        redirectAttributes.addFlashAttribute("updatedShopName", savedShop.getName());
+        redirectAttributes.addFlashAttribute("updatedShopDescription", savedShop.getDescription());
+        redirectAttributes.addFlashAttribute("updatedShopTags", savedShop.getTags());
+        return "redirect:/shops/" + shopId + "/updated";
+    }
+
+    @GetMapping("/shops/{shopId}/updated")
+    public String showUpdatedShop(@PathVariable Long shopId, Model model) {
+        if (!model.containsAttribute("updatedShopName")) {
+            return "redirect:/shops/" + shopId + "/edit";
+        }
+        model.addAttribute("shopId", shopId);
+        return "shops/updated";
     }
 
 }

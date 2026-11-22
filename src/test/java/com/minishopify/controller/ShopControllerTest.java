@@ -10,6 +10,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -58,17 +60,31 @@ class ShopControllerTest {
     }
 
     @Test
-    void validEditRedirectsToShopProducts() throws Exception {
+    void validEditRedirectsToShopUpdatedPage() throws Exception {
+        ShopForm saved = new ShopForm();
+        saved.setName("Tea Shop");
+        saved.setDescription("leaf tea");
+        saved.setTags(List.of("tea"));
         when(shopService.updateShop(eq(1L), any(ShopForm.class)))
                 .thenReturn(new Shop("Tea Shop", "leaf tea"));
+        when(shopService.getShopForm(1L)).thenReturn(saved);
 
         mockMvc.perform(post("/shops/1/edit")
                         .param("name", "Tea Shop")
                         .param("description", "leaf tea")
                         .param("tags", "tea"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/shops/1/products"))
-                .andExpect(flash().attribute("updatedShopName", "Tea Shop"));
+                .andExpect(redirectedUrl("/shops/1/updated"))
+                .andExpect(flash().attribute("updatedShopName", "Tea Shop"))
+                .andExpect(flash().attribute("updatedShopDescription", "leaf tea"))
+                .andExpect(flash().attribute("updatedShopTags", List.of("tea")));
+    }
+
+    @Test
+    void updatedPageWithoutASaveGoesBackToTheEditForm() throws Exception {
+        mockMvc.perform(get("/shops/1/updated"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/shops/1/edit"));
     }
 
     @Test
