@@ -11,6 +11,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.mock.web.MockMultipartFile;
+import java.util.List;
 import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 
@@ -24,6 +26,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @WebMvcTest(ProductController.class)
 class ProductControllerTest {
@@ -131,6 +135,60 @@ class ProductControllerTest {
             .andExpect(model().attributeHasFieldErrors("productForm", "name", "inventory"));
 
         verify(productService, never()).updateProduct(any(Long.class), any(Long.class), any(ProductForm.class));
+    }
+
+    @Test
+    void productImageIsSentWithItsContentType() throws Exception {
+        byte[] bytes = {1, 2, 3, 4};
+        Shop shop = new Shop("Coffee Corner", "Fresh coffee");
+        Product product = new Product(shop, "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5);
+        product.setImage(bytes, "image/png");
+        when(productService.getProductWithImage(1L, 5L)).thenReturn(product);
+
+        mockMvc.perform(get("/shops/1/products/5/image"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("image/png"))
+            .andExpect(content().bytes(bytes));
+    }
+
+    @Test
+    void missingProductImageReturnsNotFound() throws Exception {
+        when(productService.getProductWithImage(1L, 5L))
+            .thenThrow(new NoSuchElementException("Product has no image: 5"));
+
+        mockMvc.perform(get("/shops/1/products/5/image"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void nonImageUploadReturnsFormWithImageError() throws Exception {
+        when(productService.getShop(1L)).thenReturn(new Shop("Coffee Corner", "Fresh coffee"));
+        MockMultipartFile notAnImage =
+            new MockMultipartFile("image", "notes.txt", "text/plain", "hello".getBytes());
+
+        mockMvc.perform(multipart("/shops/1/products")
+                .file(notAnImage)
+                .param("name", "Dark Roast")
+                .param("price", "12.50")
+                .param("inventory", "5"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("products/new"))
+            .andExpect(model().attributeHasFieldErrors("productForm", "image"));
+
+        verify(productService, never()).addProduct(any(Long.class), any(ProductForm.class));
+    }
+
+    @Test
+    void productListShowsTheShopsProducts() throws Exception {
+        Shop shop = new Shop("Coffee Corner", "Fresh coffee");
+        Product product = new Product(shop, "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5);
+        when(productService.getShop(1L)).thenReturn(shop);
+        when(productService.getProductsForShop(1L)).thenReturn(List.of(product));
+
+        mockMvc.perform(get("/shops/1/products"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("products/list"))
+            .andExpect(model().attributeExists("shop", "products"));
     }
 
 }

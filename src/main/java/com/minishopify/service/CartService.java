@@ -77,6 +77,11 @@ public class CartService {
         cart.remove(productId);
     }
 
+    /** Clears the current visitor's cart after a successful checkout. */
+    public void clearCart() {
+        cart.clear();
+    }
+
     /**
      * Loads the cart's products with their current names, prices, shops, and stock.
      * Products that no longer exist are dropped from the cart.
@@ -96,7 +101,7 @@ public class CartService {
             }
             lines.add(new CartLine(product.getId(), product.getName(),
                     product.getShop().getId(), product.getShop().getName(),
-                    product.getPrice(), quantity, product.getInventory()));
+                    product.getPrice(), quantity, product.getInventory(), product.hasImage()));
         });
         return new CartView(lines);
     }
