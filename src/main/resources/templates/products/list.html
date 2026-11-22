@@ -19,6 +19,10 @@
         Added <strong th:text="${addedProductName}">product</strong>.
     </p>
 
+    <p th:if="${updatedProductName != null}">
+        Saved changes to <strong th:text="${updatedProductName}">product</strong>.
+    </p>
+
     <table th:if="${!#lists.isEmpty(products)}">
         <thead>
         <tr>
@@ -26,6 +30,7 @@
             <th>Description</th>
             <th>Price</th>
             <th>Inventory</th>
+            <th><span class="visually-hidden">Actions</span></th>
         </tr>
         </thead>
         <tbody>
@@ -34,6 +39,10 @@
             <td th:text="${product.description}">Description</td>
             <td th:text="${'$' + #numbers.formatDecimal(product.price, 1, 2)}">$0.00</td>
             <td th:text="${product.inventory}">0</td>
+            <td>
+                <a th:href="@{/shops/{shopId}/products/{productId}/edit(shopId=${shop.id},productId=${product.id})}"
+                   th:aria-label="'Edit ' + ${product.name}">Edit</a>
+            </td>
         </tr>
         </tbody>
     </table>

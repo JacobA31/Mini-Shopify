@@ -18,7 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
-// Web pages and form submissions for adding products to a shop
+// Web pages and form submissions for adding and editing a shop's products
 @Controller
 public class ProductController {
 
@@ -62,6 +62,39 @@ public class ProductController {
 
         Product addedProduct = productService.addProduct(shopId, productForm);
         redirectAttributes.addFlashAttribute("addedProductName", addedProduct.getName());
+        return "redirect:/shops/" + shopId + "/products";
+    }
+
+    @GetMapping("/shops/{shopId}/products/{productId}/edit")
+    public String showEditForm(@PathVariable Long shopId, @PathVariable Long productId, Model model) {
+        model.addAttribute("shop", productService.getShop(shopId));
+        model.addAttribute("productForm", productService.getProductForm(shopId, productId));
+        model.addAttribute("productId", productId);
+        return "products/edit";
+    }
+
+    @PostMapping("/shops/{shopId}/products/{productId}/edit")
+    public String updateProduct(
+        @PathVariable Long shopId,
+        @PathVariable Long productId,
+        @Valid @ModelAttribute("productForm") ProductForm productForm,
+        BindingResult bindingResult,
+        Model model,
+        RedirectAttributes redirectAttributes
+    ) {
+        if (!bindingResult.hasErrors()
+            && productService.nameTakenByOtherProduct(shopId, productId, productForm.getName())) {
+            bindingResult.rejectValue("name", "duplicate", "This shop already has a product with that name");
+        }
+        if (bindingResult.hasErrors()) {
+            productService.getProduct(shopId, productId);
+            model.addAttribute("shop", productService.getShop(shopId));
+            model.addAttribute("productId", productId);
+            return "products/edit";
+        }
+
+        Product updatedProduct = productService.updateProduct(shopId, productId, productForm);
+        redirectAttributes.addFlashAttribute("updatedProductName", updatedProduct.getName());
         return "redirect:/shops/" + shopId + "/products";
     }
 
