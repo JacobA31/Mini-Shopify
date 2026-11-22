@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -26,6 +27,9 @@ public class ProductForm {
     @Min(value = 0)
     private Integer inventory;
 
+    @ValidImage
+    private MultipartFile image;
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -37,4 +41,7 @@ public class ProductForm {
 
     public Integer getInventory() { return inventory; }
     public void setInventory(Integer inventory) { this.inventory = inventory; }
+
+    public MultipartFile getImage() { return image; }
+    public void setImage(MultipartFile image) { this.image = image; }
 }

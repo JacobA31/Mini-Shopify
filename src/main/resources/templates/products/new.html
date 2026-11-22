@@ -8,7 +8,7 @@
     <h1>Add a product</h1>
     <p>Adding to <strong th:text="${shop.name}">Shop name</strong></p>
 
-    <form th:action="@{/shops/{id}/products(id=${shop.id})}" th:object="${productForm}" method="post" id="product-form">
+    <form th:action="@{/shops/{id}/products(id=${shop.id})}" th:object="${productForm}" method="post" enctype="multipart/form-data" id="product-form">
         <div class="form-field">
             <label for="name">Product name</label>
             <input type="text" th:field="*{name}" required>
@@ -31,6 +31,13 @@
             <label for="inventory">Inventory</label>
             <input type="number" th:field="*{inventory}" step="1" min="0" required>
             <p class="field-error" th:if="${#fields.hasErrors('inventory')}" th:errors="*{inventory}"></p>
+        </div>
+
+        <div class="form-field">
+            <label for="image">Image (optional)</label>
+            <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/gif,image/webp">
+            <p class="field-help">JPEG, PNG, GIF or WebP, up to 2 MB.</p>
+            <p class="field-error" th:if="${#fields.hasErrors('image')}" th:errors="*{image}"></p>
         </div>
 
         <button type="submit">Add product</button>

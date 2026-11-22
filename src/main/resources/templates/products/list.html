@@ -19,6 +19,7 @@
             <th>Description</th>
             <th>Price</th>
             <th>Inventory</th>
+            <th>Image</th>
         </tr>
         </thead>
         <tbody>
@@ -27,6 +28,14 @@
             <td th:text="${product.description}">Description</td>
             <td th:text="${'$' + #numbers.formatDecimal(product.price, 1, 2)}">$0.00</td>
             <td th:text="${product.inventory}">0</td>
+
+            <td>
+                <img th:if="${product.hasImage()}"
+                     th:src="@{/shops/{shopId}/products/{productId}/image(shopId=${shop.id},productId=${product.id})}"
+                     th:alt="${product.name}"
+                     width="80">
+                <span th:unless="${product.hasImage()}">No image</span>
+            </td>
         </tr>
         </tbody>
     </table>

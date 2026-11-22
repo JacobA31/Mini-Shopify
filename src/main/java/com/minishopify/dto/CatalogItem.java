@@ -13,13 +13,20 @@ public final class CatalogItem {
     private final String description;
     private final BigDecimal price;
     private final int inventory;
+    private final boolean hasImage;
 
-    public CatalogItem(Long id, String name, String description, BigDecimal price, int inventory) {
+    public CatalogItem(Long id, String name, String description, BigDecimal price, int inventory,
+                       boolean hasImage) {
         this.id = id;
         this.name = Objects.requireNonNull(name, "name");
         this.description = description;
         this.price = Objects.requireNonNull(price, "price");
         this.inventory = inventory;
+        this.hasImage = hasImage;
+    }
+
+    public boolean hasImage() {
+        return hasImage;
     }
 
     public Long getId() {

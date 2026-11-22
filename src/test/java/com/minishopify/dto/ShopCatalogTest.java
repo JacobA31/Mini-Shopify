@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ShopCatalogTest {
 
     private static CatalogItem item(String name, int inventory) {
-        return new CatalogItem(1L, name, null, new BigDecimal("5.00"), inventory);
+        return new CatalogItem(1L, name, null, new BigDecimal("5.00"), inventory, false);
     }
 
     @Test
@@ -42,9 +42,9 @@ class ShopCatalogTest {
 
     @Test
     void itemRequiresNameAndPrice() {
-        assertThatThrownBy(() -> new CatalogItem(1L, null, null, BigDecimal.ONE, 1))
+        assertThatThrownBy(() -> new CatalogItem(1L, null, null, BigDecimal.ONE, 1, false))
                 .isInstanceOf(NullPointerException.class);
-        assertThatThrownBy(() -> new CatalogItem(1L, "A", null, null, 1))
+        assertThatThrownBy(() -> new CatalogItem(1L, "A", null, null, 1, false))
                 .isInstanceOf(NullPointerException.class);
     }
 }

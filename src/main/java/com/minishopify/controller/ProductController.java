@@ -5,6 +5,8 @@ import com.minishopify.model.Product;
 import com.minishopify.service.ProductService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -60,6 +62,26 @@ public class ProductController {
         return "redirect:/shops/" + shopId + "/products";
     }
 
+    // Sends the product's image back to the browser
+    @GetMapping("/shops/{shopId}/products/{productId}/image")
+    public ResponseEntity<byte[]> showProductImage(@PathVariable Long shopId, @PathVariable Long productId) {
+        return imageResponse(productService.getProductWithImage(shopId, productId));
+    }
+
+    // Same image found by product id alone
+    @GetMapping("/products/{productId}/image")
+    public ResponseEntity<byte[]> showProductImageById(@PathVariable Long productId) {
+        return imageResponse(productService.getProductWithImage(productId));
+    }
+
+    private ResponseEntity<byte[]> imageResponse(Product product) {
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(product.getImageContentType()))
+            .header("X-Content-Type-Options", "nosniff")
+            .body(product.getImage());
+    }
+
+    // A shop id that does not exist gives a normal 404 page
     @ExceptionHandler(NoSuchElementException.class)
     public void handleShopNotFound(NoSuchElementException exception, HttpServletResponse response)
         throws IOException {

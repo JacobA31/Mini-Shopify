@@ -40,7 +40,7 @@ class CatalogControllerTest {
     @Test
     void catalogPagePutsCatalogInModel() throws Exception {
         ShopCatalog catalog = new ShopCatalog(1L, "Maple Goods", "Canadian treats",
-                List.of(new CatalogItem(10L, "Butter tarts", "Box of 6", new BigDecimal("12.50"), 4)));
+                List.of(new CatalogItem(10L, "Butter tarts", "Box of 6", new BigDecimal("12.50"), 4, false)));
         when(catalogService.getCatalog(1L)).thenReturn(catalog);
 
         mockMvc.perform(get("/shops/1/catalog"))
@@ -52,8 +52,8 @@ class CatalogControllerTest {
     @Test
     void catalogPageShowsShopProductsPricesAndStock() throws Exception {
         when(catalogService.getCatalog(1L)).thenReturn(new ShopCatalog(1L, "Maple Goods", "Canadian treats",
-                List.of(new CatalogItem(10L, "Butter tarts", "Box of 6", new BigDecimal("12.50"), 4),
-                        new CatalogItem(11L, "Maple syrup", null, new BigDecimal("1299.99"), 0))));
+                List.of(new CatalogItem(10L, "Butter tarts", "Box of 6", new BigDecimal("12.50"), 4, false),
+                        new CatalogItem(11L, "Maple syrup", null, new BigDecimal("1299.99"), 0, false))));
 
         mockMvc.perform(get("/shops/1/catalog"))
                 .andExpect(status().isOk())

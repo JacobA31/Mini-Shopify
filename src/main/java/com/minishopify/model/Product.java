@@ -1,5 +1,6 @@
 package com.minishopify.model;
 
+import com.minishopify.exception.InsufficientInventoryException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Version;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -33,9 +36,20 @@ public class Product {
     @Column(nullable = false)
     private int inventory;
 
+    @Version
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
+
+    // Product image, stored in database (null when the product has no image)
+    @Lob
+    @Column(name = "image")
+    private byte[] image;
+
+    @Column(name = "image_content_type")
+    private String imageContentType;
 
     // Required by JPA
     protected Product() {
@@ -71,5 +85,34 @@ public class Product {
 
     public Shop getShop() {
         return shop;
+    }
+
+    public byte[] getImage() {
+        return image;
+    }
+
+    public String getImageContentType() {
+        return imageContentType;
+    }
+
+    public boolean hasImage() {
+        return image != null && image.length > 0;
+    }
+
+    // Sets the image and its content type together
+    public void setImage(byte[] image, String imageContentType) {
+        this.image = Objects.requireNonNull(image, "image must not be null");
+        this.imageContentType = Objects.requireNonNull(imageContentType, "imageContentType must not be null");
+    }
+
+    /** Reduces available inventory after validating the requested quantity. */
+    public void decrementInventory(int quantity) {
+        if (quantity < 1) {
+            throw new IllegalArgumentException("Quantity must be at least 1.");
+        }
+        if (quantity > inventory) {
+            throw new InsufficientInventoryException(name, inventory);
+        }
+        inventory -= quantity;
     }
 }

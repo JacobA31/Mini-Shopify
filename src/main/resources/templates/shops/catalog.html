@@ -8,6 +8,10 @@
     <h1 th:text="${catalog.shopName}">Shop name</h1>
     <p class="muted" th:if="${catalog.shopDescription}" th:text="${catalog.shopDescription}">Shop description</p>
 
+    <p class="flash flash-success" th:if="${cartMessage}">
+        <span th:text="${cartMessage}">Added to your cart.</span> <a th:href="@{/cart}">View cart</a>
+    </p>
+    <p class="flash flash-error" th:if="${cartError}" th:text="${cartError}">Only 2 in stock.</p>
     <h2>Products</h2>
 
     <p th:if="${catalog.empty}" class="muted">This shop has no products yet.</p>
@@ -16,10 +20,23 @@
         <li th:each="item : ${catalog.items}" class="product-card"
             th:classappend="${item.inStock} ? '' : 'out-of-stock'">
             <h3 th:text="${item.name}">Product name</h3>
+            <img th:if="${item.hasImage()}"
+                 th:src="@{/products/{id}/image(id=${item.id})}"
+                 th:alt="${item.name}"
+                 width="160">
             <p th:if="${item.description}" th:text="${item.description}">Description</p>
             <p class="price" th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 'COMMA', 2, 'POINT')}">$0.00</p>
             <p class="stock" th:if="${item.inStock}" th:text="${item.inventory} + ' in stock'">3 in stock</p>
             <p class="stock" th:unless="${item.inStock}">Out of stock</p>
+
+            <form class="inline-form" th:if="${item.inStock}" th:action="@{/cart/add}" method="post">
+                <input type="hidden" name="productId" th:value="${item.id}">
+                <input type="hidden" name="shopId" th:value="${catalog.shopId}">
+                <label class="visually-hidden" th:for="'add-qty-' + ${item.id}">Quantity</label>
+                <input type="number" name="quantity" value="1" min="1" th:max="${item.inventory}"
+                       th:id="'add-qty-' + ${item.id}">
+                <button type="submit">Add to cart</button>
+            </form>
         </li>
     </ul>
 </main>

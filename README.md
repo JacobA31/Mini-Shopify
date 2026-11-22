@@ -117,9 +117,24 @@ classDiagram
         String description
         BigDecimal price
         int inventory
+        byte[] image
+        String imageContentType
+        Long version
+    }
+    class CustomerOrder {
+        Long id
+        LocalDateTime placedAt
+        BigDecimal total
+    }
+    class OrderLine {
+        Long id
+        int quantity
+        BigDecimal unitPrice
     }
     Shop "*" -- "*" Tag : tags
     Product "*" --> "1" Shop : shop
+    CustomerOrder "1" *-- "1..*" OrderLine
+    OrderLine "*" --> "1" Product
 ```
 
 ## Database schema
@@ -142,16 +157,39 @@ erDiagram
         BIGINT shop_id PK, FK
         BIGINT tag_id PK, FK
     }
-    PRODUCTS{
+    PRODUCTS {
         BIGINT id PK
         VARCHAR(255) name
         VARCHAR(255) description
-        DECIMAL price
+        DECIMAL price "precision 10, scale 2"
         INTEGER inventory
+        BLOB image
+        VARCHAR(255) image_content_type
+        BIGINT version
         BIGINT shop_id FK
+    }
+    CUSTOMER_ORDERS {
+        BIGINT id PK
+        TIMESTAMP placed_at
+        DECIMAL total "precision 12, scale 2"
+    }
+    ORDER_LINES {
+        BIGINT id PK
+        INTEGER quantity
+        DECIMAL unit_price "precision 10, scale 2"
+        BIGINT customer_order_id FK
+        BIGINT product_id FK
     }
 
     SHOPS ||--o{ SHOP_TAGS : has
     TAGS ||--o{ SHOP_TAGS : labels
     SHOPS ||--o{ PRODUCTS : sells
+    CUSTOMER_ORDERS ||--|{ ORDER_LINES : contains
+    PRODUCTS ||--o{ ORDER_LINES : purchased_as
 ```
+
+The relationship lines above show the foreign-key links between tables. `SHOP_TAGS` has a composite
+primary key made from `shop_id` and `tag_id`.
+
+`ORDER_LINES` records the quantity and price of each product at checkout. The `@Version` field on
+`Product` lets Hibernate detect concurrent inventory updates and prevent selling more than is in stock.
