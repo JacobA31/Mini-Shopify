@@ -19,6 +19,11 @@ cd Mini-Shopify
 While running locally, the H2 database console is at http://localhost:8080/h2-console
 (JDBC URL `jdbc:h2:mem:minishopify`, user `sa`, empty password).
 
+The local database is in memory, so it starts empty on every run. A few demo shops and products
+are added automatically on startup (see `config/DemoDataSeeder`). To start with an empty database
+instead, run `./mvnw spring-boot:run -Dspring-boot.run.arguments=--minishopify.seed.enabled=false`.
+Tests never get the demo data.
+
 In IntelliJ, use *File → Open* on the `pom.xml` and open it as a project. Then run
 `MiniShopifyApplication`.
 
@@ -60,9 +65,48 @@ git merge main            # resolve conflicts, run ./mvnw verify, push
 - Tests mirror the main package: `service/ShopService` → `src/test/.../service/ShopServiceTest`.
 - Thymeleaf views go in a folder per feature (`templates/shops/list.html`) and use the shared
   fragments in `templates/fragments/layout.html`.
-- **If you change an entity, update the UML class diagram and DB schema in the README in the same PR.**
+- **If you change an entity, add a migration (see below) and update the UML class diagram and DB schema
+  in the README in the same PR.**
 - Don't add UI links to pages that don't exist yet.
 - Formatting comes from `.editorconfig` (4 spaces, LF). IntelliJ picks it up automatically.
+
+## Changing the database schema
+
+The tables are created and changed by **Flyway migrations** in `src/main/resources/db/migration`,
+not by Hibernate. On startup, Flyway runs every migration the database hasn't seen yet, then Hibernate
+checks that the `@Entity` classes match the tables (`ddl-auto=validate`). If they don't match, **the app
+won't start** and every `@SpringBootTest` fails with a `SchemaManagementException` naming the missing
+table or column.
+
+So whenever you add or change an entity field, add a migration in the same PR:
+
+1. Create `src/main/resources/db/migration/V<next number>__<what_it_does>.sql`, for example
+   `V2__add_product_image.sql`. Two underscores after the number. Check `main` for the latest number
+   first; if someone merges the same number before you, rename yours to the next one.
+2. Write the SQL for the change, for example:
+   ```sql
+   alter table products add column image blob;
+   alter table products add column image_content_type varchar(100);
+   ```
+   New `not null` columns need a `default`, because the live database already has rows.
+3. Run `./mvnw verify`. The tests run every migration on a fresh in-memory database and validate it
+   against your entities.
+4. Update the UML class diagram and DB schema in the README.
+
+**Never edit or rename a migration that is already on `main`.** The live database has already run
+it, and Flyway will refuse to start the app because the file's checksum changed. Fix mistakes with
+a new migration instead.
+
+Tip: to see the `create table` SQL Hibernate expects for your entities (a good starting point for the
+migration), build the JAR and have Hibernate write it to `schema.sql`:
+```bash
+./mvnw -q package -DskipTests
+java -jar target/mini-shopify.jar --spring.main.web-application-type=none \
+  --spring.flyway.enabled=false --spring.jpa.hibernate.ddl-auto=none --minishopify.seed.enabled=false \
+  --spring.jpa.properties.jakarta.persistence.schema-generation.scripts.action=create \
+  --spring.jpa.properties.jakarta.persistence.schema-generation.scripts.create-target=schema.sql
+```
+Copy only the parts for your change into the migration, and don't commit `schema.sql`.
 
 ## Weekly scrum
 
@@ -123,6 +167,10 @@ secret below exist. Until then, the deploy job is skipped and only build and tes
   - **Secrets** tab → New repository secret `AZURE_WEBAPP_PUBLISH_PROFILE` = the full contents of the
     downloaded file
   - **Variables** tab → New repository variable `AZURE_WEBAPP_NAME` = the Web App's name
+- [ ] *Settings → Environment variables* → add the application setting `SPRING_PROFILES_ACTIVE` = `azure`.
+      This switches the app to `application-azure.properties`, which keeps the database in an H2 file on
+      App Service's persistent `/home` disk, so data survives restarts and redeploys. Keep the App Service
+      at **one instance** (no scale-out): two instances can't share the H2 file.
 - [ ] Optional: *Monitoring → Health check* path `/actuator/health`.
 - [ ] Re-run the latest workflow on `main` (*Actions → CI/CD → Run workflow*). Then open
       `https://<app-name>.azurewebsites.net` and put the URL in the README.
@@ -131,3 +179,10 @@ secret below exist. Until then, the deploy job is skipped and only build and tes
 *Log stream* in the Web App. If the logs show Spring Boot started on port 8080 but the site still
 doesn't respond, add an application setting `SERVER_PORT` = `80`
 (*Settings → Environment variables*).
+
+If the logs show `Database may be already in use`, two copies of the app are trying to open the H2 file
+at once (for example, during a deploy). Restart the Web App. If it keeps happening, see the persistence
+decision in [`docs/architecture.md`](docs/architecture.md#open-decisions).
+
+If the logs show `Validate failed: Migrations have failed validation` or a checksum mismatch, a migration
+that was already deployed has been edited. Revert that edit and put the change in a new migration.
