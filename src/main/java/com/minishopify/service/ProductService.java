@@ -46,17 +46,21 @@ public class ProductService {
             form.getDescription(),
             form.getPrice(),
             form.getInventory());
-
-        MultipartFile image = form.getImage();
-        if (image != null && !image.isEmpty()) {
-            try {
-                product.setImage(image.getBytes(), image.getContentType().toLowerCase(Locale.ROOT));
-            } catch (IOException e) {
-                throw new UncheckedIOException("Could not read the uploaded image", e);
-            }
-        }
+        attachImage(product, form.getImage());
 
         return productRepository.save(product);
+    }
+
+    // Stores an uploaded image on the product. An empty upload leaves the current image as it is.
+    private static void attachImage(Product product, MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            return;
+        }
+        try {
+            product.setImage(image.getBytes(), image.getContentType().toLowerCase(Locale.ROOT));
+        } catch (IOException e) {
+            throw new UncheckedIOException("Could not read the uploaded image", e);
+        }
     }
 
     // Returns all products that belong to the shop
@@ -95,7 +99,21 @@ public class ProductService {
             form.getDescription(),
             form.getPrice(),
             form.getInventory());
+
+        // A newly uploaded image wins over the "Remove current image" checkbox
+        boolean newImageUploaded = form.getImage() != null && !form.getImage().isEmpty();
+        if (form.isRemoveImage() && !newImageUploaded) {
+            product.removeImage();
+        } else {
+            attachImage(product, form.getImage());
+        }
         return product;
+    }
+
+    // Whether the product has an image, so the edit page can show it. Throws ProductNotFoundException like getProduct.
+    @Transactional(readOnly = true)
+    public boolean productHasImage(Long shopId, Long productId) {
+        return getProduct(shopId, productId).hasImage();
     }
 
     // Copies a product's info into a form

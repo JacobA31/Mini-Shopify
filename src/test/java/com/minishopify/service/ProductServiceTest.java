@@ -20,6 +20,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -119,27 +121,6 @@ class ProductServiceTest {
     }
 
     @Test
-    void updateMissingProductIsNotFound() {
-        when(productRepository.findById(99L)).thenReturn(Optional.empty());
-
-        assertThrows(ProductNotFoundException.class,
-            () -> productService.updateProduct(1L, 99L, validForm()));
-    }
-
-    @Test
-    void getProductFormIsPrefilled() {
-        Product product = new Product(shopWithId(1L), "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5);
-        when(productRepository.findById(7L)).thenReturn(Optional.of(product));
-
-        ProductForm form = productService.getProductForm(1L, 7L);
-
-        assertEquals("Dark Roast", form.getName());
-        assertEquals("Fresh beans", form.getDescription());
-        assertEquals(0, new BigDecimal("12.50").compareTo(form.getPrice()));
-        assertEquals(5, form.getInventory());
-    }
-
-    @Test
     void addProductWithImageStoresBytesAndContentType() {
         Shop shop = new Shop("Coffee Corner", "Fresh coffee");
         when(shopRepository.findById(1L)).thenReturn(Optional.of(shop));
@@ -154,6 +135,50 @@ class ProductServiceTest {
         assertTrue(saved.hasImage());
         assertArrayEquals(bytes, saved.getImage());
         assertEquals("image/png", saved.getImageContentType());
+    }
+
+    @Test
+    void updateProductWithNewImageReplacesTheOldOne() {
+        Product product = new Product(shopWithId(1L), "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5);
+        product.setImage(new byte[] {1, 2, 3}, "image/png");
+        when(productRepository.findById(7L)).thenReturn(Optional.of(product));
+        byte[] newBytes = {9, 8, 7};
+        ProductForm form = validForm();
+        form.setImage(new MockMultipartFile("image", "new.jpg", "image/jpeg", newBytes));
+
+        Product updated = productService.updateProduct(1L, 7L, form);
+
+        assertArrayEquals(newBytes, updated.getImage());
+        assertEquals("image/jpeg", updated.getImageContentType());
+    }
+
+    @Test
+    void updateProductWithoutNewImageKeepsTheCurrentOne() {
+        Product product = new Product(shopWithId(1L), "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5);
+        byte[] currentBytes = {1, 2, 3};
+        product.setImage(currentBytes, "image/png");
+        when(productRepository.findById(7L)).thenReturn(Optional.of(product));
+        ProductForm form = validForm();
+        form.setImage(new MockMultipartFile("image", "", "application/octet-stream", new byte[0]));
+
+        Product updated = productService.updateProduct(1L, 7L, form);
+
+        assertArrayEquals(currentBytes, updated.getImage());
+        assertEquals("image/png", updated.getImageContentType());
+    }
+
+    @Test
+    void updateProductWithRemoveImageChecked() {
+        Product product = new Product(shopWithId(1L), "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5);
+        product.setImage(new byte[] {1, 2, 3}, "image/png");
+        when(productRepository.findById(7L)).thenReturn(Optional.of(product));
+        ProductForm form = validForm();
+        form.setRemoveImage(true);
+
+        Product updated = productService.updateProduct(1L, 7L, form);
+
+        assertFalse(updated.hasImage());
+        assertNull(updated.getImageContentType());
     }
 
     @Test

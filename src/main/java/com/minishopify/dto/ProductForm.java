@@ -30,6 +30,9 @@ public class ProductForm {
     @ValidImage
     private MultipartFile image;
 
+    // Edit form only: the "Remove current image" checkbox
+    private boolean removeImage;
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -44,4 +47,7 @@ public class ProductForm {
 
     public MultipartFile getImage() { return image; }
     public void setImage(MultipartFile image) { this.image = image; }
+
+    public boolean isRemoveImage() { return removeImage; }
+    public void setRemoveImage(boolean removeImage) { this.removeImage = removeImage; }
 }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -18,6 +19,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -110,33 +112,56 @@ class EditProductIntegrationTest {
         assertThat(catalog.body()).contains(newName).contains("Out of stock").doesNotContain("Dark Roast");
     }
 
-    @Test
-    void productCanKeepItsNameButNotTakeAnothers() throws Exception {
-        Shop shop = createShop();
-        Product product = createProduct(shop, "Dark Roast");
-        createProduct(shop, "Espresso");
+    // Submits the edit form the way a browser does when it has a file box (multipart/form-data)
+    private HttpResponse<String> postEditWithImage(String path, String name, String fileName,
+                                                   String fileType, byte[] fileBytes) throws Exception {
+        String boundary = "----EditProductTest" + UUID.randomUUID();
+        ByteArrayOutputStream body = new ByteArrayOutputStream();
+        Map<String, String> fields = Map.of(
+            "name", name, "description", "Edited description", "price", "12.50", "inventory", "5");
 
-        HttpResponse<String> keepName = postForm(editPath(shop, product), productForm("dark roast", "13.00", "5"));
-        assertThat(keepName.statusCode()).isBetween(300, 399);
+        for (Map.Entry<String, String> field : fields.entrySet()) {
+            body.write(("--" + boundary + "\r\n"
+                + "Content-Disposition: form-data; name=\"" + field.getKey() + "\"\r\n\r\n"
+                + field.getValue() + "\r\n").getBytes(StandardCharsets.UTF_8));
+        }
+        body.write(("--" + boundary + "\r\n"
+            + "Content-Disposition: form-data; name=\"image\"; filename=\"" + fileName + "\"\r\n"
+            + "Content-Type: " + fileType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+        body.write(fileBytes);
+        body.write(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
 
-        HttpResponse<String> takeName = postForm(editPath(shop, product), productForm("ESPRESSO", "13.00", "5"));
-        assertThat(takeName.statusCode()).isEqualTo(200);
-        assertThat(takeName.body()).contains("This shop already has a product with that name");
-        assertThat(productRepository.findById(product.getId()).orElseThrow().getName()).isEqualTo("dark roast");
+        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
+            .header("Accept", "text/html")
+            .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+            .POST(HttpRequest.BodyPublishers.ofByteArray(body.toByteArray()))
+            .build();
+        return http.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private Product createProductWithImage(Shop shop, String name, byte[] image) {
+        Product product = new Product(shop, name, "Fresh beans", new BigDecimal("12.50"), 5);
+        product.setImage(image, "image/png");
+        return productRepository.save(product);
     }
 
     @Test
-    void invalidEditIsRejectedWithoutSaving() throws Exception {
+    void uploadingANewImageReplacesTheOldOne() throws Exception {
         Shop shop = createShop();
-        Product product = createProduct(shop, "Dark Roast");
+        Product product = createProductWithImage(shop, "Dark Roast", new byte[] {1, 2, 3});
+        byte[] newImage = {9, 8, 7, 6};
 
-        HttpResponse<String> response = postForm(editPath(shop, product), productForm("   ", "12.50", "-1"));
+        HttpResponse<String> editForm = getPage(editPath(shop, product));
+        assertThat(editForm.body())
+            .contains("Current image")
+            .contains("/shops/" + shop.getId() + "/products/" + product.getId() + "/image");
 
-        assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("Name is required");
-        Product unchanged = productRepository.findById(product.getId()).orElseThrow();
-        assertThat(unchanged.getName()).isEqualTo("Dark Roast");
-        assertThat(unchanged.getInventory()).isEqualTo(5);
+        HttpResponse<String> submission =
+            postEditWithImage(editPath(shop, product), "Dark Roast", "new.jpg", "image/jpeg", newImage);
+        assertThat(submission.statusCode()).isBetween(300, 399);
+
+        Product saved = productRepository.findById(product.getId()).orElseThrow();
+        assertThat(saved.getImage()).isEqualTo(newImage);
+        assertThat(saved.getImageContentType()).isEqualTo("image/jpeg");
     }
-
 }

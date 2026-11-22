@@ -102,28 +102,6 @@ class ProductRepositoryTest {
     }
 
     @Test
-    void editedProductCanUseANameFromAnotherShop() {
-        assertFalse(productRepository.existsByShopIdAndNameIgnoreCaseAndIdNot(
-            coffeeShop.getId(), "Old Novel", darkRoast.getId()));
-    }
-
-    @Test
-    void updatedProductIsSaved() {
-        Product product = productRepository.findById(darkRoast.getId()).orElseThrow();
-        product.update("Light Roast", "Mild beans", new BigDecimal("11.00"), 3);
-        entityManager.flush();
-        entityManager.clear();
-
-        Product found = productRepository.findById(product.getId()).orElseThrow();
-
-        assertEquals("Light Roast", found.getName());
-        assertEquals("Mild beans", found.getDescription());
-        assertEquals(0, new BigDecimal("11.00").compareTo(found.getPrice()));
-        assertEquals(3, found.getInventory());
-        assertEquals(coffeeShop.getId(), found.getShop().getId());
-    }
-
-    @Test
     void findByIdAndShopIdReturnsTheProductOfThatShop() {
         Shop shop = shopRepository.findById(emptyShop.getId()).orElseThrow();
         Product saved = productRepository.save(

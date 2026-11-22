@@ -9,7 +9,7 @@
     <p>In <strong th:text="${shop.name}">Shop name</strong></p>
 
     <form th:action="@{/shops/{shopId}/products/{productId}/edit(shopId=${shop.id},productId=${productId})}"
-          th:object="${productForm}" method="post" id="product-form">
+          th:object="${productForm}" method="post" enctype="multipart/form-data" id="product-form">
         <div class="form-field">
             <label for="name">Product name</label>
             <input type="text" th:field="*{name}" required>
@@ -34,6 +34,32 @@
             <p class="field-error" th:if="${#fields.hasErrors('inventory')}" th:errors="*{inventory}"></p>
         </div>
 
+        <div class="form-field">
+            <div th:if="${hasImage}" id="current-image">
+                <p>Current image:</p>
+                <div class="image-preview">
+                    <img th:src="@{/shops/{shopId}/products/{productId}/image(shopId=${shop.id},productId=${productId})}"
+                         th:alt="${productForm.name}"
+                         width="120">
+                    <button type="button" class="remove-image-button" id="remove-image-button"
+                            aria-label="Remove image">&times;</button>
+                </div>
+            </div>
+            <p th:if="${hasImage}" id="image-removed-message" class="field-help" hidden>
+                The image will be removed when you save.
+                <button type="button" class="link-button" id="undo-remove-image">Undo</button>
+            </p>
+            <!-- Set to "true" by the × button (see product-form.js) -->
+            <input type="hidden" id="remove-image" name="removeImage" th:value="${productForm.removeImage}">
+            <label for="image" th:text="${hasImage} ? 'Replace image (optional)' : 'Image (optional)'">Image (optional)</label>
+            <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/gif,image/webp">
+            <p class="field-help">
+                JPEG, PNG, GIF or WebP, up to 2 MB.
+                <span th:if="${hasImage}">Leave empty to keep the current image.</span>
+            </p>
+            <p class="field-error" th:if="${#fields.hasErrors('image')}" th:errors="*{image}"></p>
+        </div>
+
         <button type="submit">Save changes</button>
     </form>
 
@@ -41,5 +67,6 @@
 </main>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:src="@{/js/product-form.js}" defer></script>
 </body>
 </html>

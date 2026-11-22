@@ -67,6 +67,7 @@ public class ProductController {
         model.addAttribute("shop", productService.getShop(shopId));
         model.addAttribute("productForm", productService.getProductForm(shopId, productId));
         model.addAttribute("productId", productId);
+        model.addAttribute("hasImage", productService.productHasImage(shopId, productId));
         return "products/edit";
     }
 
@@ -84,7 +85,8 @@ public class ProductController {
             bindingResult.rejectValue("name", "duplicate", "This shop already has a product with that name");
         }
         if (bindingResult.hasErrors()) {
-            productService.getProduct(shopId, productId);
+            // Also gives a 404 for an unknown product instead of showing the form
+            model.addAttribute("hasImage", productService.productHasImage(shopId, productId));
             model.addAttribute("shop", productService.getShop(shopId));
             model.addAttribute("productId", productId);
             return "products/edit";

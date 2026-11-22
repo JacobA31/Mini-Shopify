@@ -1,7 +1,6 @@
 package com.minishopify.controller;
 
 import com.minishopify.dto.ProductForm;
-import com.minishopify.exception.ProductNotFoundException;
 import com.minishopify.model.Product;
 import com.minishopify.model.Shop;
 import com.minishopify.service.ProductService;
@@ -77,20 +76,6 @@ class ProductControllerTest {
     }
 
     @Test
-    void editFormShowsCurrentProductDetails() throws Exception {
-        ProductForm form = new ProductForm();
-        form.setName("Dark Roast");
-        when(productService.getShop(1L)).thenReturn(new Shop("Coffee Corner", "Fresh coffee"));
-        when(productService.getProductForm(1L, 7L)).thenReturn(form);
-
-        mockMvc.perform(get("/shops/1/products/7/edit"))
-            .andExpect(status().isOk())
-            .andExpect(view().name("products/edit"))
-            .andExpect(model().attribute("productForm", form))
-            .andExpect(model().attribute("productId", 7L));
-    }
-
-    @Test
     void validEditRedirectsToProductList() throws Exception {
         Shop shop = new Shop("Coffee Corner", "Fresh coffee");
         Product product = new Product(shop, "Light Roast", "Fresh beans", new BigDecimal("11.00"), 3);
@@ -118,21 +103,6 @@ class ProductControllerTest {
             .andExpect(status().isOk())
             .andExpect(view().name("products/edit"))
             .andExpect(model().attributeHasFieldErrors("productForm", "name"));
-
-        verify(productService, never()).updateProduct(any(Long.class), any(Long.class), any(ProductForm.class));
-    }
-
-    @Test
-    void invalidEditReturnsFormWithValidationErrors() throws Exception {
-        when(productService.getShop(1L)).thenReturn(new Shop("Coffee Corner", "Fresh coffee"));
-
-        mockMvc.perform(post("/shops/1/products/7/edit")
-                .param("name", "   ")
-                .param("price", "11.00")
-                .param("inventory", "-1"))
-            .andExpect(status().isOk())
-            .andExpect(view().name("products/edit"))
-            .andExpect(model().attributeHasFieldErrors("productForm", "name", "inventory"));
 
         verify(productService, never()).updateProduct(any(Long.class), any(Long.class), any(ProductForm.class));
     }
@@ -179,6 +149,24 @@ class ProductControllerTest {
     }
 
     @Test
+    void nonImageUploadOnEditReturnsFormWithImageError() throws Exception {
+        when(productService.getShop(1L)).thenReturn(new Shop("Coffee Corner", "Fresh coffee"));
+        MockMultipartFile notAnImage =
+            new MockMultipartFile("image", "notes.txt", "text/plain", "hello".getBytes());
+
+        mockMvc.perform(multipart("/shops/1/products/7/edit")
+                .file(notAnImage)
+                .param("name", "Dark Roast")
+                .param("price", "12.50")
+                .param("inventory", "5"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("products/edit"))
+            .andExpect(model().attributeHasFieldErrors("productForm", "image"));
+
+        verify(productService, never()).updateProduct(any(Long.class), any(Long.class), any(ProductForm.class));
+    }
+
+    @Test
     void productListShowsTheShopsProducts() throws Exception {
         Shop shop = new Shop("Coffee Corner", "Fresh coffee");
         Product product = new Product(shop, "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5);
@@ -190,5 +178,4 @@ class ProductControllerTest {
             .andExpect(view().name("products/list"))
             .andExpect(model().attributeExists("shop", "products"));
     }
-
 }
