@@ -11,7 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import org.springframework.mock.web.MockMultipartFile;
-
+import java.util.List;
 import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 
@@ -113,6 +113,19 @@ class ProductControllerTest {
             .andExpect(model().attributeHasFieldErrors("productForm", "image"));
 
         verify(productService, never()).addProduct(any(Long.class), any(ProductForm.class));
+    }
+
+    @Test
+    void productListShowsTheShopsProducts() throws Exception {
+        Shop shop = new Shop("Coffee Corner", "Fresh coffee");
+        Product product = new Product(shop, "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5);
+        when(productService.getShop(1L)).thenReturn(shop);
+        when(productService.getProductsForShop(1L)).thenReturn(List.of(product));
+
+        mockMvc.perform(get("/shops/1/products"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("products/list"))
+            .andExpect(model().attributeExists("shop", "products"));
     }
 
 }

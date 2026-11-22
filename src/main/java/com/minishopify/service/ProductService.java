@@ -77,6 +77,19 @@ public class ProductService {
         if (!product.hasImage()) {
             throw new NoSuchElementException("Product has no image: " + productId);
         }
+
+        return product;
+    }
+
+    @Transactional(readOnly = true)
+    public Product getProductWithImage(Long productId) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new NoSuchElementException("Product not found: " + productId));
+
+        if (!product.hasImage()) {
+            throw new NoSuchElementException("Product has no image: " + productId);
+        }
+
         return product;
     }
 }

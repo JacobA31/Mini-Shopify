@@ -101,7 +101,7 @@ public class CartService {
             }
             lines.add(new CartLine(product.getId(), product.getName(),
                     product.getShop().getId(), product.getShop().getName(),
-                    product.getPrice(), quantity, product.getInventory()));
+                    product.getPrice(), quantity, product.getInventory(), product.hasImage()));
         });
         return new CartView(lines);
     }

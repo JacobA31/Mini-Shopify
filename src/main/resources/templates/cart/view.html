@@ -26,6 +26,11 @@
         <tbody>
         <tr th:each="line : ${cart.lines}">
             <td>
+            <td>
+                <img th:if="${line.hasImage()}"
+                     th:src="@{/products/{id}/image(id=${line.productId})}"
+                     th:alt="${line.productName}"
+                     width="60" style="display:block">
                 <strong th:text="${line.productName}">Product</strong><br>
                 <a class="muted" th:href="@{/shops/{id}/catalog(id=${line.shopId})}"
                    th:text="${line.shopName}">Shop</a>

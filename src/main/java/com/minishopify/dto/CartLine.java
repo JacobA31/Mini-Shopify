@@ -13,9 +13,10 @@ public final class CartLine {
     private final BigDecimal unitPrice;
     private final int quantity;
     private final int available;
+    private final boolean hasImage;
 
     public CartLine(Long productId, String productName, Long shopId, String shopName,
-                    BigDecimal unitPrice, int quantity, int available) {
+                    BigDecimal unitPrice, int quantity, int available, boolean hasImage) {
         this.productId = productId;
         this.productName = Objects.requireNonNull(productName, "productName");
         this.shopId = shopId;
@@ -23,6 +24,7 @@ public final class CartLine {
         this.unitPrice = Objects.requireNonNull(unitPrice, "unitPrice");
         this.quantity = quantity;
         this.available = available;
+        this.hasImage = hasImage;
     }
 
     public Long getProductId() {
@@ -57,4 +59,6 @@ public final class CartLine {
     public BigDecimal getLineTotal() {
         return unitPrice.multiply(BigDecimal.valueOf(quantity));
     }
+
+    public boolean hasImage() { return hasImage; }
 }
