@@ -26,7 +26,7 @@
 
     <a th:href="@{/shops/{id}/products/new(id=${createdShopId})}">Add products to this shop</a>
 
-    <a th:href="@{/shops/{id}/products(id=${createdShopId})}">Manage this shop</a>
+    <a th:href="@{/shops/{id}/edit(id=${createdShopId})}">Edit shop details</a>
 </main>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
