@@ -16,11 +16,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import org.springframework.mock.web.MockMultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -77,5 +77,42 @@ class ProductServiceTest {
         when(productRepository.findByShopId(1L)).thenReturn(List.of(product));
 
         assertEquals(List.of(product), productService.getProductsForShop(1L));
+    }
+
+    @Test
+    void addProductWithImageStoresBytesAndContentType() {
+        Shop shop = new Shop("Coffee Corner", "Fresh coffee");
+        when(shopRepository.findById(1L)).thenReturn(Optional.of(shop));
+        when(productRepository.save(any(Product.class)))
+            .thenAnswer(invocation -> (Product) invocation.getArgument(0));
+        byte[] bytes = {1, 2, 3, 4};
+        ProductForm form = validForm();
+        form.setImage(new MockMultipartFile("image", "beans.png", "IMAGE/PNG", bytes));
+
+        Product saved = productService.addProduct(1L, form);
+
+        assertTrue(saved.hasImage());
+        assertArrayEquals(bytes, saved.getImage());
+        assertEquals("image/png", saved.getImageContentType());
+    }
+
+    @Test
+    void getProductWithImageReturnsTheProduct() {
+        Shop shop = new Shop("Coffee Corner", "Fresh coffee");
+        Product product = new Product(shop, "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5);
+        product.setImage(new byte[] {1, 2, 3}, "image/png");
+        when(productRepository.findByIdAndShopId(5L, 1L)).thenReturn(Optional.of(product));
+
+        assertSame(product, productService.getProductWithImage(1L, 5L));
+    }
+
+    @Test
+    void getProductWithImageThrowsWhenProductHasNoImage() {
+        Shop shop = new Shop("Coffee Corner", "Fresh coffee");
+        Product product = new Product(shop, "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5);
+        when(productRepository.findByIdAndShopId(5L, 1L)).thenReturn(Optional.of(product));
+
+        assertThrows(NoSuchElementException.class,
+            () -> productService.getProductWithImage(1L, 5L));
     }
 }

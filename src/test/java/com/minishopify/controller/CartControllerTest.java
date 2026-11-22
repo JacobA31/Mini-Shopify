@@ -40,8 +40,8 @@ class CartControllerTest {
     @Test
     void cartPageShowsLinesAndTotal() throws Exception {
         when(cartService.getCart()).thenReturn(new CartView(List.of(
-                new CartLine(10L, "Butter tarts", 1L, "Maple Goods", new BigDecimal("12.50"), 2, 5),
-                new CartLine(11L, "Maple syrup", 1L, "Maple Goods", new BigDecimal("1000.00"), 1, 3))));
+                new CartLine(10L, "Butter tarts", 1L, "Maple Goods", new BigDecimal("12.50"), 2, 5, false),
+                new CartLine(11L, "Maple syrup", 1L, "Maple Goods", new BigDecimal("1000.00"), 1, 3, false))));
 
         mockMvc.perform(get("/cart"))
                 .andExpect(status().isOk())
