@@ -36,20 +36,20 @@ public class ShopService {
         return shopRepository.save(shop);
     }
 
-    // Finds a shop by id, or throws ShopNotFoundException (a 404)
+    // Finds a shop by id or throws ShopNotFoundException
     @Transactional(readOnly = true)
     public Shop getShop(Long shopId) {
         return shopRepository.findById(shopId)
                 .orElseThrow(() -> new ShopNotFoundException(shopId));
     }
 
-    // The edit form pre-filled with the shop's current name, description, and tags
+    // The edit form pre-filled with the shop's info
     @Transactional(readOnly = true)
     public ShopForm getShopForm(Long shopId) {
         return toForm(getShop(shopId));
     }
 
-    // Replaces the shop's name, description, and tags with the submitted form data
+    // Replaces the shop's name, description, and tags with the new form data
     @Transactional
     public Shop updateShop(Long shopId, ShopForm form) {
         Shop shop = getShop(shopId);
@@ -65,7 +65,6 @@ public class ShopService {
 
     @Transactional(readOnly = true)
     public List<Shop> searchShops(String query) {
-
         String keyword = query.trim();
         Set<Shop> results = new LinkedHashSet<>(shopRepository.findByNameContainingIgnoreCase(keyword));
         results.addAll(shopRepository.findByTags_NameIgnoreCase(keyword));
