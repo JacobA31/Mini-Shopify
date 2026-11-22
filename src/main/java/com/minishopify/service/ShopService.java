@@ -49,7 +49,7 @@ public class ShopService {
         return toForm(getShop(shopId));
     }
 
-    // Replaces the shop's name, description, and tags with the new form data
+    // Replaces the shop's info with the new form data
     @Transactional
     public Shop updateShop(Long shopId, ShopForm form) {
         Shop shop = getShop(shopId);

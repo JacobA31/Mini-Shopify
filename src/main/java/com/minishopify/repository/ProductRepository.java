@@ -12,6 +12,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     boolean existsByShopIdAndNameIgnoreCase(Long shopId, String name);
 
-    // Same check while editing: ignores the product being edited, so keeping its own name is allowed
+    // Same check while editing but it ignores the product being edited so keeping its own name is allowed
     boolean existsByShopIdAndNameIgnoreCaseAndIdNot(Long shopId, String name, Long id);
 }

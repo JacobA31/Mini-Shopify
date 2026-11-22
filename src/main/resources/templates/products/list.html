@@ -11,10 +11,6 @@
         <a th:href="@{/shops/{id}/edit(id=${shop.id})}">Edit shop details</a>
     </p>
 
-    <p th:if="${updatedShopName != null}">
-        Saved changes to <strong th:text="${updatedShopName}">shop</strong>.
-    </p>
-
     <p th:if="${addedProductName != null}">
         Added <strong th:text="${addedProductName}">product</strong>.
     </p>
