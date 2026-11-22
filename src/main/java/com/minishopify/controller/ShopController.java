@@ -83,22 +83,19 @@ public class ShopController {
             return "shops/edit";
         }
 
-        shopService.updateShop(shopId, shopForm);
-
-        ShopForm savedShop = shopService.getShopForm(shopId);
-        redirectAttributes.addFlashAttribute("updatedShopName", savedShop.getName());
-        redirectAttributes.addFlashAttribute("updatedShopDescription", savedShop.getDescription());
-        redirectAttributes.addFlashAttribute("updatedShopTags", savedShop.getTags());
-        return "redirect:/shops/" + shopId + "/updated";
+        boolean changed = shopService.updateShop(shopId, shopForm);
+        if (changed) {
+            redirectAttributes.addFlashAttribute("shopSaved", true);
+        }
+        return "redirect:/shops/" + shopId;
     }
 
-    @GetMapping("/shops/{shopId}/updated")
-    public String showUpdatedShop(@PathVariable Long shopId, Model model) {
-        if (!model.containsAttribute("updatedShopName")) {
-            return "redirect:/shops/" + shopId + "/edit";
-        }
+    // The merchant's page for one shop: its name, description, and tags
+    @GetMapping("/shops/{shopId}")
+    public String showShopDetails(@PathVariable Long shopId, Model model) {
+        model.addAttribute("shopDetails", shopService.getShopForm(shopId));
         model.addAttribute("shopId", shopId);
-        return "shops/updated";
+        return "shops/details";
     }
 
 }

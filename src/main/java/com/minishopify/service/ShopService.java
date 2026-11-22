@@ -49,14 +49,29 @@ public class ShopService {
         return toForm(getShop(shopId));
     }
 
-    // Replaces the shop's info with the new form data
+    // Replaces the shop's info with the new form data.
+    // Returns false when the merchant saved without changing anything.
     @Transactional
-    public Shop updateShop(Long shopId, ShopForm form) {
+    public boolean updateShop(Long shopId, ShopForm form) {
         Shop shop = getShop(shopId);
+        ShopForm before = toForm(shop);
+
         shop.update(form.getName().trim(), form.getDescription());
         shop.clearTags();
         addTags(shop, form.getTags());
-        return shop;
+
+        return !sameDetails(before, toForm(shop));
+    }
+
+    private static boolean sameDetails(ShopForm a, ShopForm b) {
+        return a.getName().equals(b.getName())
+                && blankToEmpty(a.getDescription()).equals(blankToEmpty(b.getDescription()))
+                && a.getTags().equals(b.getTags());
+    }
+
+    // An empty description box and no description count as the same
+    private static String blankToEmpty(String text) {
+        return text == null ? "" : text.strip();
     }
 
     public boolean hasShops() {

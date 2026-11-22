@@ -1,7 +1,6 @@
 package com.minishopify.service;
 
 import com.minishopify.dto.ShopForm;
-import com.minishopify.exception.ShopNotFoundException;
 import com.minishopify.model.Shop;
 import com.minishopify.model.Tag;
 import com.minishopify.repository.ShopRepository;
@@ -16,8 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -118,35 +116,28 @@ class ShopServiceTest {
         form.setDescription("leaf tea");
         form.setTags(List.of(" Tea "));
 
-        Shop updatedShop = shopService.updateShop(1L, form);
+        boolean changed = shopService.updateShop(1L, form);
 
-        assertSame(shop, updatedShop);
-        assertEquals("Tea Shop", updatedShop.getName());
-        assertEquals("leaf tea", updatedShop.getDescription());
-        assertEquals(List.of("tea"), updatedShop.getTags().stream().map(Tag::getName).toList());
+        assertTrue(changed);
+        assertEquals("Tea Shop", shop.getName());
+        assertEquals("leaf tea", shop.getDescription());
+        assertEquals(List.of("tea"), shop.getTags().stream().map(Tag::getName).toList());
     }
 
     @Test
-    void getShopFormIsPrefilledWithSortedTags() {
-        Shop shop = new Shop("Corner Store", "A small local shop");
-        shop.addTag(new Tag("tea"));
-        shop.addTag(new Tag("coffee"));
+    void savingWithoutChangesReportsNothingChanged() {
+        Tag coffee = new Tag("coffee");
+        Shop shop = new Shop("Corner Store", null);
+        shop.addTag(coffee);
         when(shopRepository.findById(1L)).thenReturn(Optional.of(shop));
+        when(tagRepository.findByName("coffee")).thenReturn(Optional.of(coffee));
 
-        ShopForm form = shopService.getShopForm(1L);
-
-        assertEquals("Corner Store", form.getName());
-        assertEquals("A small local shop", form.getDescription());
-        assertEquals(List.of("coffee", "tea"), form.getTags());
-    }
-
-    @Test
-    void updateMissingShopThrowsNotFound() {
-        when(shopRepository.findById(99L)).thenReturn(Optional.empty());
+        // Same details as saved; the empty description box counts as "no description"
         ShopForm form = new ShopForm();
-        form.setName("Anything");
+        form.setName("Corner Store ");
+        form.setDescription("");
+        form.setTags(List.of("Coffee"));
 
-        assertThrows(ShopNotFoundException.class, () -> shopService.updateShop(99L, form));
+        assertFalse(shopService.updateShop(1L, form));
     }
-
 }

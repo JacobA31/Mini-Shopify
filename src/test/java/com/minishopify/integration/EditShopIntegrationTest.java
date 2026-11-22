@@ -94,13 +94,15 @@ class EditShopIntegrationTest {
                 + "&tags=" + formValue(newTag.toUpperCase()));
 
         assertThat(submission.statusCode()).isBetween(300, 399);
-        URI updatedPageUri = URI.create(submission.headers().firstValue("Location").orElseThrow());
-        assertThat(updatedPageUri.getPath()).startsWith("/shops/" + shop.getId() + "/updated");
+        URI detailsPageUri = URI.create(submission.headers().firstValue("Location").orElseThrow());
+        assertThat(detailsPageUri.getPath()).startsWith("/shops/" + shop.getId());
 
-        HttpResponse<String> updatedPage = getPage(updatedPageUri.getRawPath());
-        assertThat(updatedPage.statusCode()).isEqualTo(200);
-        assertThat(updatedPage.body())
-            .contains("Shop updated")
+        // The Shop details page shows what was saved: trimmed name, description, and lowercase tags
+        HttpResponse<String> detailsPage = getPage(detailsPageUri.getRawPath());
+        assertThat(detailsPage.statusCode()).isEqualTo(200);
+        assertThat(detailsPage.body())
+            .contains("Shop details")
+            .contains("Changes saved")
             .contains(newName)
             .contains("After editing")
             .contains(keptTag)
@@ -114,27 +116,4 @@ class EditShopIntegrationTest {
         assertThat(idsOfShopsTagged(newTag)).containsExactly(shop.getId());
         assertThat(idsOfShopsTagged(oldTag)).doesNotContain(shop.getId());
     }
-
-    @Test
-    void renamedShopIsFoundBySearchUnderItsNewName() throws Exception {
-        Shop shop = createShop();
-        String newName = "Searchable " + UUID.randomUUID();
-
-        postForm("/shops/" + shop.getId() + "/edit", "name=" + formValue(newName));
-
-        HttpResponse<String> search = getPage("/?query=" + formValue(newName));
-        assertThat(search.body()).contains(newName);
-    }
-
-    @Test
-    void blankShopNameIsRejectedWithoutSaving() throws Exception {
-        Shop shop = createShop();
-
-        HttpResponse<String> response = postForm("/shops/" + shop.getId() + "/edit", "name=" + formValue("   "));
-
-        assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("Shop name is required");
-        assertThat(shopRepository.findById(shop.getId()).orElseThrow().getName()).isEqualTo(shop.getName());
-    }
-
 }

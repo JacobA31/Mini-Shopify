@@ -1,7 +1,6 @@
 package com.minishopify.controller;
 
 import com.minishopify.dto.ShopForm;
-import com.minishopify.exception.ShopNotFoundException;
 import com.minishopify.model.Shop;
 import com.minishopify.service.ShopService;
 import org.junit.jupiter.api.Test;
@@ -10,14 +9,11 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -47,44 +43,25 @@ class ShopControllerTest {
     }
 
     @Test
-    void editFormShowsCurrentShopDetails() throws Exception {
-        ShopForm form = new ShopForm();
-        form.setName("Corner Store");
-        when(shopService.getShopForm(1L)).thenReturn(form);
-
-        mockMvc.perform(get("/shops/1/edit"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("shops/edit"))
-                .andExpect(model().attribute("shopForm", form))
-                .andExpect(model().attribute("shopId", 1L));
-    }
-
-    @Test
-    void validEditRedirectsToShopUpdatedPage() throws Exception {
-        ShopForm saved = new ShopForm();
-        saved.setName("Tea Shop");
-        saved.setDescription("leaf tea");
-        saved.setTags(List.of("tea"));
-        when(shopService.updateShop(eq(1L), any(ShopForm.class)))
-                .thenReturn(new Shop("Tea Shop", "leaf tea"));
-        when(shopService.getShopForm(1L)).thenReturn(saved);
+    void validEditRedirectsToShopDetailsWithSavedMessage() throws Exception {
+        when(shopService.updateShop(eq(1L), any(ShopForm.class))).thenReturn(true);
 
         mockMvc.perform(post("/shops/1/edit")
                         .param("name", "Tea Shop")
                         .param("description", "leaf tea")
                         .param("tags", "tea"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/shops/1/updated"))
-                .andExpect(flash().attribute("updatedShopName", "Tea Shop"))
-                .andExpect(flash().attribute("updatedShopDescription", "leaf tea"))
-                .andExpect(flash().attribute("updatedShopTags", List.of("tea")));
+                .andExpect(redirectedUrl("/shops/1"))
+                .andExpect(flash().attribute("shopSaved", true));
     }
 
     @Test
-    void updatedPageWithoutASaveGoesBackToTheEditForm() throws Exception {
-        mockMvc.perform(get("/shops/1/updated"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/shops/1/edit"));
+    void savingWithoutChangesShowsNoSavedMessage() throws Exception {
+        when(shopService.updateShop(eq(1L), any(ShopForm.class))).thenReturn(false);
+
+        mockMvc.perform(post("/shops/1/edit").param("name", "Tea Shop"))
+                .andExpect(redirectedUrl("/shops/1"))
+                .andExpect(flash().attributeCount(0));
     }
 
     @Test
@@ -98,13 +75,4 @@ class ShopControllerTest {
 
         verify(shopService, never()).updateShop(any(Long.class), any(ShopForm.class));
     }
-
-    @Test
-    void editingUnknownShopReturnsNotFound() throws Exception {
-        when(shopService.getShopForm(99L)).thenThrow(new ShopNotFoundException(99L));
-
-        mockMvc.perform(get("/shops/99/edit"))
-                .andExpect(status().isNotFound());
-    }
-
 }

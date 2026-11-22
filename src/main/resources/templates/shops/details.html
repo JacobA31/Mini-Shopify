@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head th:replace="~{fragments/layout :: head('Shop updated')}"></head>
+<head th:replace="~{fragments/layout :: head('Shop details')}"></head>
 <body>
 <header th:replace="~{fragments/layout :: header}"></header>
 
 <main class="container">
-    <h1>Shop updated</h1>
-    <h2 th:text="${updatedShopName}">Shop name</h2>
+    <h1>Shop details</h1>
 
-    <p th:if="${updatedShopDescription != null and !#strings.isEmpty(updatedShopDescription)}"
-       th:text="${updatedShopDescription}"></p>
-    <p th:if="${updatedShopDescription == null or #strings.isEmpty(updatedShopDescription)}">
-        No description.
-    </p>
+    <p class="flash flash-success" th:if="${shopSaved}">Changes saved.</p>
+
+    <h2 th:text="${shopDetails.name}">Shop name</h2>
+
+    <p th:if="${!#strings.isEmpty(shopDetails.description)}" th:text="${shopDetails.description}"></p>
+    <p th:if="${#strings.isEmpty(shopDetails.description)}">No description.</p>
 
     <section aria-labelledby="shop-tags-heading">
         <h3 id="shop-tags-heading">Tags</h3>
-        <ul th:if="${!#lists.isEmpty(updatedShopTags)}">
-            <li th:each="tag : ${updatedShopTags}" th:text="${tag}">tag</li>
+        <ul th:if="${!#lists.isEmpty(shopDetails.tags)}">
+            <li th:each="tag : ${shopDetails.tags}" th:text="${tag}">tag</li>
         </ul>
-        <p th:if="${#lists.isEmpty(updatedShopTags)}">No tags.</p>
+        <p th:if="${#lists.isEmpty(shopDetails.tags)}">No tags.</p>
     </section>
 
     <a th:href="@{/shops/{id}/edit(id=${shopId})}">Edit shop details</a>
