@@ -1,6 +1,8 @@
 package com.minishopify.service;
 
+import com.minishopify.dto.ShopDetails;
 import com.minishopify.dto.ShopForm;
+import com.minishopify.exception.ShopNotFoundException;
 import com.minishopify.model.Shop;
 import com.minishopify.model.Tag;
 import com.minishopify.repository.ShopRepository;
@@ -12,6 +14,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 
 // Handles shop related work
@@ -31,14 +34,45 @@ public class ShopService {
     public Shop createShop(ShopForm form) {
         String shopName = form.getName().trim();
         Shop shop = new Shop(shopName, form.getDescription());
-
-        for (String tagName : normalizeTags(form.getTags())) {
-            Tag tag = tagRepository.findByName(tagName)
-                    .orElseGet(() -> tagRepository.save(new Tag(tagName)));
-            shop.addTag(tag);
-        }
-
+        addTags(shop, form.getTags());
         return shopRepository.save(shop);
+    }
+
+    // Finds a shop by id or throws ShopNotFoundException
+    @Transactional(readOnly = true)
+    public Shop getShop(Long shopId) {
+        return shopRepository.findById(shopId)
+                .orElseThrow(() -> new ShopNotFoundException(shopId));
+    }
+
+    // The edit form pre-filled with the shop's info
+    @Transactional(readOnly = true)
+    public ShopForm getShopForm(Long shopId) {
+        return toForm(getShop(shopId));
+    }
+
+    @Transactional(readOnly = true)
+    public ShopDetails getShopDetails(Long shopId) {
+        return toDetails(getShop(shopId));
+    }
+
+    // Returns false when the merchant saved without changing anything.
+    @Transactional
+    public boolean updateShop(Long shopId, ShopForm form) {
+        Shop shop = getShop(shopId);
+        ShopDetails before = toDetails(shop);
+
+        shop.update(form.getName().trim(), form.getDescription());
+        shop.clearTags();
+        addTags(shop, form.getTags());
+
+        return !sameDetails(before, toDetails(shop));
+    }
+
+    private static boolean sameDetails(ShopDetails a, ShopDetails b) {
+        return a.getName().equals(b.getName())
+                && Objects.toString(a.getDescription(), "").equals(Objects.toString(b.getDescription(), ""))
+                && a.getTags().equals(b.getTags());
     }
 
     public boolean hasShops() {
@@ -47,11 +81,35 @@ public class ShopService {
 
     @Transactional(readOnly = true)
     public List<Shop> searchShops(String query) {
-
         String keyword = query.trim();
         Set<Shop> results = new LinkedHashSet<>(shopRepository.findByNameContainingIgnoreCase(keyword));
         results.addAll(shopRepository.findByTags_NameIgnoreCase(keyword));
         return new ArrayList<>(results);
+    }
+
+    // Copies a shop into a form.
+    private static ShopForm toForm(Shop shop) {
+        ShopForm form = new ShopForm();
+        form.setName(shop.getName());
+        form.setDescription(shop.getDescription());
+        form.setTags(sortedTagNames(shop));
+        return form;
+    }
+
+    private static ShopDetails toDetails(Shop shop) {
+        return new ShopDetails(shop.getId(), shop.getName(), shop.getDescription(), sortedTagNames(shop));
+    }
+
+    private static List<String> sortedTagNames(Shop shop) {
+        return shop.getTags().stream().map(Tag::getName).sorted().toList();
+    }
+
+    private void addTags(Shop shop, Iterable<String> submittedTags) {
+        for (String tagName : normalizeTags(submittedTags)) {
+            Tag tag = tagRepository.findByName(tagName)
+                    .orElseGet(() -> tagRepository.save(new Tag(tagName)));
+            shop.addTag(tag);
+        }
     }
 
     private Set<String> normalizeTags(Iterable<String> submittedTags) {

@@ -9,12 +9,13 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
-// Web pages and form submissions for creating shops
+// Web pages and form submissions for creating and editing shops
 @Controller
 public class ShopController {
 
@@ -59,6 +60,42 @@ public class ShopController {
             return "redirect:/shops/new";
         }
         return "shops/created";
+    }
+
+    @GetMapping("/shops/{shopId}/edit")
+    public String showEditForm(@PathVariable Long shopId, Model model) {
+        model.addAttribute("shopForm", shopService.getShopForm(shopId));
+        model.addAttribute("shopId", shopId);
+        return "shops/edit";
+    }
+
+    @PostMapping("/shops/{shopId}/edit")
+    public String updateShop(
+            @PathVariable Long shopId,
+            @Valid @ModelAttribute("shopForm") ShopForm shopForm,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            shopService.getShop(shopId); // a 404 for an unknown shop not the form
+            model.addAttribute("shopId", shopId);
+            return "shops/edit";
+        }
+
+        boolean changed = shopService.updateShop(shopId, shopForm);
+        if (changed) {
+            redirectAttributes.addFlashAttribute("shopSaved", true);
+        }
+        return "redirect:/shops/" + shopId;
+    }
+
+    // The merchant's page for one shop with its info
+    @GetMapping("/shops/{shopId}")
+    public String showShopDetails(@PathVariable Long shopId, Model model) {
+        model.addAttribute("shopDetails", shopService.getShopDetails(shopId));
+        model.addAttribute("shopId", shopId);
+        return "shops/details";
     }
 
 }

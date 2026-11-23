@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -101,4 +102,41 @@ class ShopServiceTest {
         assertEquals(shop, results.get(0));
     }
 
+    @Test
+    void updateShopReplacesDetailsAndTags() {
+        Shop shop = new Shop("Corner Store", "A small local shop");
+        shop.addTag(new Tag("coffee"));
+        when(shopRepository.findById(1L)).thenReturn(Optional.of(shop));
+        when(tagRepository.findByName("tea")).thenReturn(Optional.empty());
+        when(tagRepository.save(any(Tag.class)))
+                .thenAnswer(invocation -> (Tag) invocation.getArgument(0));
+
+        ShopForm form = new ShopForm();
+        form.setName("  Tea Shop  ");
+        form.setDescription("leaf tea");
+        form.setTags(List.of(" Tea "));
+
+        boolean changed = shopService.updateShop(1L, form);
+
+        assertTrue(changed);
+        assertEquals("Tea Shop", shop.getName());
+        assertEquals("leaf tea", shop.getDescription());
+        assertEquals(List.of("tea"), shop.getTags().stream().map(Tag::getName).toList());
+    }
+
+    @Test
+    void savingWithoutChangesReportsNothingChanged() {
+        Tag coffee = new Tag("coffee");
+        Shop shop = new Shop("Corner Store", null);
+        shop.addTag(coffee);
+        when(shopRepository.findById(1L)).thenReturn(Optional.of(shop));
+        when(tagRepository.findByName("coffee")).thenReturn(Optional.of(coffee));
+
+        ShopForm form = new ShopForm();
+        form.setName("Corner Store ");
+        form.setDescription("");
+        form.setTags(List.of("Coffee"));
+
+        assertFalse(shopService.updateShop(1L, form));
+    }
 }

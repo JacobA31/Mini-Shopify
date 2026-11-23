@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -75,6 +76,38 @@ class ProductControllerTest {
     }
 
     @Test
+    void validEditRedirectsToProductList() throws Exception {
+        Shop shop = new Shop("Coffee Corner", "Fresh coffee");
+        Product product = new Product(shop, "Light Roast", "Fresh beans", new BigDecimal("11.00"), 3);
+        when(productService.updateProduct(eq(1L), eq(7L), any(ProductForm.class))).thenReturn(product);
+
+        mockMvc.perform(post("/shops/1/products/7/edit")
+                .param("name", "Light Roast")
+                .param("description", "Fresh beans")
+                .param("price", "11.00")
+                .param("inventory", "3"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/shops/1/products"))
+            .andExpect(flash().attribute("updatedProductName", "Light Roast"));
+    }
+
+    @Test
+    void editToAnotherProductsNameIsRejected() throws Exception {
+        when(productService.getShop(1L)).thenReturn(new Shop("Coffee Corner", "Fresh coffee"));
+        when(productService.nameTakenByOtherProduct(1L, 7L, "Espresso")).thenReturn(true);
+
+        mockMvc.perform(post("/shops/1/products/7/edit")
+                .param("name", "Espresso")
+                .param("price", "11.00")
+                .param("inventory", "3"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("products/edit"))
+            .andExpect(model().attributeHasFieldErrors("productForm", "name"));
+
+        verify(productService, never()).updateProduct(any(Long.class), any(Long.class), any(ProductForm.class));
+    }
+
+    @Test
     void productImageIsSentWithItsContentType() throws Exception {
         byte[] bytes = {1, 2, 3, 4};
         Shop shop = new Shop("Coffee Corner", "Fresh coffee");
@@ -116,6 +149,24 @@ class ProductControllerTest {
     }
 
     @Test
+    void nonImageUploadOnEditReturnsFormWithImageError() throws Exception {
+        when(productService.getShop(1L)).thenReturn(new Shop("Coffee Corner", "Fresh coffee"));
+        MockMultipartFile notAnImage =
+            new MockMultipartFile("image", "notes.txt", "text/plain", "hello".getBytes());
+
+        mockMvc.perform(multipart("/shops/1/products/7/edit")
+                .file(notAnImage)
+                .param("name", "Dark Roast")
+                .param("price", "12.50")
+                .param("inventory", "5"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("products/edit"))
+            .andExpect(model().attributeHasFieldErrors("productForm", "image"));
+
+        verify(productService, never()).updateProduct(any(Long.class), any(Long.class), any(ProductForm.class));
+    }
+
+    @Test
     void productListShowsTheShopsProducts() throws Exception {
         Shop shop = new Shop("Coffee Corner", "Fresh coffee");
         Product product = new Product(shop, "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5);
@@ -127,5 +178,4 @@ class ProductControllerTest {
             .andExpect(view().name("products/list"))
             .andExpect(model().attributeExists("shop", "products"));
     }
-
 }

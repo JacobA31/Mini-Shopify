@@ -10,9 +10,12 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
 import java.math.BigDecimal;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 class ProductRepositoryTest {
@@ -29,6 +32,7 @@ class ProductRepositoryTest {
     private Shop coffeeShop;
     private Shop bookShop;
     private Shop emptyShop;
+    private Product darkRoast;
 
     @BeforeEach
     void setUp() {
@@ -36,7 +40,7 @@ class ProductRepositoryTest {
         bookShop = shopRepository.save(new Shop("Book Store", "Used books"));
         emptyShop = shopRepository.save(new Shop("Empty Shop", "Nothing yet"));
 
-        productRepository.save(new Product(coffeeShop, "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5));
+        darkRoast = productRepository.save(new Product(coffeeShop, "Dark Roast", "Fresh beans", new BigDecimal("12.50"), 5));
         productRepository.save(new Product(coffeeShop, "Espresso Cup", "Ceramic", new BigDecimal("8.00"), 20));
         productRepository.save(new Product(bookShop, "Old Novel", "Used paperback", new BigDecimal("4.25"), 1));
 
@@ -83,6 +87,18 @@ class ProductRepositoryTest {
         assertEquals(0, new BigDecimal("25.00").compareTo(found.getPrice()));
         assertEquals(100, found.getInventory());
         assertEquals(emptyShop.getId(), found.getShop().getId());
+    }
+
+    @Test
+    void editedProductCanKeepItsOwnName() {
+        assertFalse(productRepository.existsByShopIdAndNameIgnoreCaseAndIdNot(
+            coffeeShop.getId(), "dark roast", darkRoast.getId()));
+    }
+
+    @Test
+    void editedProductCannotTakeAnotherProductsName() {
+        assertTrue(productRepository.existsByShopIdAndNameIgnoreCaseAndIdNot(
+            coffeeShop.getId(), "ESPRESSO CUP", darkRoast.getId()));
     }
 
     @Test

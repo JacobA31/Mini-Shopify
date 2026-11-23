@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.minishopify.dto.ProductForm;
+import com.minishopify.exception.ProductNotFoundException;
 import com.minishopify.model.Product;
 import com.minishopify.model.Shop;
 import com.minishopify.repository.ProductRepository;
@@ -45,17 +46,20 @@ public class ProductService {
             form.getDescription(),
             form.getPrice(),
             form.getInventory());
-
-        MultipartFile image = form.getImage();
-        if (image != null && !image.isEmpty()) {
-            try {
-                product.setImage(image.getBytes(), image.getContentType().toLowerCase(Locale.ROOT));
-            } catch (IOException e) {
-                throw new UncheckedIOException("Could not read the uploaded image", e);
-            }
-        }
+        attachImage(product, form.getImage());
 
         return productRepository.save(product);
+    }
+
+    private static void attachImage(Product product, MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            return;
+        }
+        try {
+            product.setImage(image.getBytes(), image.getContentType().toLowerCase(Locale.ROOT));
+        } catch (IOException e) {
+            throw new UncheckedIOException("Could not read the uploaded image", e);
+        }
     }
 
     // Returns all products that belong to the shop
@@ -67,6 +71,56 @@ public class ProductService {
     @Transactional(readOnly = true)
     public boolean nameTakenInShop(Long shopId, String name) {
         return productRepository.existsByShopIdAndNameIgnoreCase(shopId, name.trim());
+    }
+
+    @Transactional(readOnly = true)
+    public boolean nameTakenByOtherProduct(Long shopId, Long productId, String name) {
+        return productRepository.existsByShopIdAndNameIgnoreCaseAndIdNot(shopId, name.trim(), productId);
+    }
+
+    @Transactional(readOnly = true)
+    public Product getProduct(Long shopId, Long productId) {
+        return productRepository.findById(productId)
+            .filter(product -> product.getShop().getId().equals(shopId))
+            .orElseThrow(() -> new ProductNotFoundException(productId));
+    }
+
+    @Transactional(readOnly = true)
+    public ProductForm getProductForm(Long shopId, Long productId) {
+        return toForm(getProduct(shopId, productId));
+    }
+
+    @Transactional
+    public Product updateProduct(Long shopId, Long productId, ProductForm form) {
+        Product product = getProduct(shopId, productId);
+        product.update(
+            form.getName().trim(),
+            form.getDescription(),
+            form.getPrice(),
+            form.getInventory());
+
+        boolean newImageUploaded = form.getImage() != null && !form.getImage().isEmpty();
+        if (form.isRemoveImage() && !newImageUploaded) {
+            product.removeImage();
+        } else {
+            attachImage(product, form.getImage());
+        }
+        return product;
+    }
+
+    @Transactional(readOnly = true)
+    public boolean productHasImage(Long shopId, Long productId) {
+        return getProduct(shopId, productId).hasImage();
+    }
+
+    // Copies a product's info into a form
+    private static ProductForm toForm(Product product) {
+        ProductForm form = new ProductForm();
+        form.setName(product.getName());
+        form.setDescription(product.getDescription());
+        form.setPrice(product.getPrice());
+        form.setInventory(product.getInventory());
+        return form;
     }
 
     @Transactional(readOnly = true)

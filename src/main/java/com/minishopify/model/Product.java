@@ -87,6 +87,13 @@ public class Product {
         return shop;
     }
 
+    public void update(String name, String description, BigDecimal price, int inventory) {
+        this.name = Objects.requireNonNull(name, "name must not be null");
+        this.description = description;
+        this.price = Objects.requireNonNull(price, "price must not be null");
+        this.inventory = inventory;
+    }
+
     public byte[] getImage() {
         return image;
     }
@@ -103,6 +110,11 @@ public class Product {
     public void setImage(byte[] image, String imageContentType) {
         this.image = Objects.requireNonNull(image, "image must not be null");
         this.imageContentType = Objects.requireNonNull(imageContentType, "imageContentType must not be null");
+    }
+
+    public void removeImage() {
+        this.image = null;
+        this.imageContentType = null;
     }
 
     /** Reduces available inventory after validating the requested quantity. */
