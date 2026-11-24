@@ -1,8 +1,8 @@
 # Architecture
 
-This document describes how the code is organised and the design we are aiming for.
-The domain model below is a **proposal** for the team to discuss; nothing in it is
-implemented yet. The README's UML and DB schema sections describe what actually exists.
+This document describes how the code is organised and the design decisions behind it.
+The README's UML and DB schema sections describe exactly what is in the code today; the
+domain model below also shows what Sprint 3 adds.
 
 ## Tech stack
 
@@ -68,10 +68,11 @@ src/test/java/com/minishopify/    Mirrors the main package structure
   `controller/ShopController`, and `templates/shops/new.html`. Because each feature gets its own
   files, people working on different features rarely hit merge conflicts.
 
-## Proposed domain model
+## Domain model
 
-> Proposal only. Discuss and adjust it before implementing. When entities are implemented,
-> the README's UML diagram must describe the real code.
+> Sprint 1–2 entities are implemented. The entities and fields marked *Sprint 3* are planned
+> (login and order history) and don't exist yet. When they are implemented, update the README's UML
+> diagram and DB schema in the same PR.
 
 ```mermaid
 classDiagram
@@ -80,7 +81,6 @@ classDiagram
         Long id
         String name
         String description
-        LocalDateTime createdAt
     }
     class Tag {
         Long id
@@ -106,10 +106,19 @@ classDiagram
         int quantity
         BigDecimal unitPrice
     }
+    class UserAccount {
+        <<Sprint 3>>
+        Long id
+        String username
+        String passwordHash
+        Role role
+    }
     Shop "*" -- "*" Tag : tags
-    Shop "1" *-- "*" Product : catalog
+    Product "*" --> "1" Shop : shop
     CustomerOrder "1" *-- "1..*" OrderLine
     OrderLine "*" --> "1" Product
+    Shop "*" --> "1" UserAccount : owner (Sprint 3)
+    CustomerOrder "*" --> "1" UserAccount : customer (Sprint 3)
 ```
 
 Design notes:
@@ -130,7 +139,10 @@ Design notes:
   schema. Hence `CustomerOrder`.
 - **Product images are stored in the database** (`@Lob byte[]`) and served by a controller
   endpoint such as `GET /products/{id}/image`. That avoids having to manage files on Azure.
-- **Merchant/customer accounts** are not modelled yet. See open decisions.
+- **Merchant/customer accounts** are planned for Sprint 3 as one `UserAccount` entity with a `role`
+  (`MERCHANT` or `CUSTOMER`). See open decisions.
+- **A merchant's orders** are found through `OrderLine → Product → Shop`, so `CustomerOrder` doesn't
+  need a shop column. One order can contain products from several shops.
 
 ## Testing strategy
 
@@ -162,28 +174,27 @@ To decide as a team (record the outcome here):
    - Why not PostgreSQL: free, no extra Azure resource, and the same engine we use locally.
      Trade-off: H2 allows only one process to open the file, so the App Service must stay at one
      instance. If deploys start failing with `Database may be already in use`, revisit (c).
-2. **Authentication.** Start without login (anyone can create a shop or buy), then add
-   Spring Security with `MERCHANT` and `CUSTOMER` roles if time allows. Adding login later
-   means `Shop` gains an owner relationship.
+2. **Authentication.** *Planned for Sprint 3.* Sprints 1–2 had no login, so anyone can create
+   or edit any shop. Sprint 3 adds Spring Security form login with a `UserAccount` entity and
+   `MERCHANT` / `CUSTOMER` roles, with passwords stored as BCrypt hashes. `Shop` gains a required
+   `owner`, and `CustomerOrder` gains a `customer`. Shops that already exist on the live database get the
+   demo merchant as their owner in the migration, so `not null` can be added safely.
+   Browsing, search, and the cart stay public. Creating and editing shops needs `MERCHANT`, and
+   checkout needs `CUSTOMER`. Record the final choices here.
 3. **JavaScript.** Plain server-rendered forms first. Add small JS/`fetch` calls (e.g.
    "add to cart" without a page reload) only where it clearly improves the demo.
 
-## Suggested work split
+## Work split
 
-Four vertical slices. Each person owns one end to end (model → view → tests) and reviews the others:
+Each person owns a vertical slice end to end (model → view → tests) and reviews the others. The
+current owners and the plan for each sprint are in the README's
+[*Plan for next sprint*](../README.md#plan-for-next-sprint) section and the
+[milestones](https://github.com/JacobA31/Mini-Shopify/milestones).
 
 | Slice                  | Scope                                                              |
 |------------------------|--------------------------------------------------------------------|
-| Shops                  | Create/edit shop form, tags/categories, shop page                  |
+| Shops                  | Create/edit shop form, tags/categories, shop page, merchant dashboard |
 | Products               | Add/edit products with description, picture, price, and inventory  |
 | Discovery              | Search shops by name and by tag, browse a shop's catalog           |
-| Cart & checkout        | Session cart, checkout, inventory enforcement, order confirmation  |
-
-Suggested milestone targets (adjust in the README's sprint plan):
-
-- **Milestone 1, Nov 12 (prototype):** CI + Azure live; one use case end to end
-  (e.g. a merchant creates a shop with tags and it appears in a list of shops).
-- **Milestone 2, Nov 26 (alpha):** products with images and inventory, search by name/tag,
-  browse a catalog, add to cart.
-- **Milestone 3, Dec 10 (final):** checkout with inventory enforcement, polish, any stretch
-  goals (login, persistence), and no dangling links.
+| Cart & checkout        | Session cart, checkout, inventory enforcement, order confirmation and history |
+| Platform               | CI/CD, Azure, persistence, login and security                      |

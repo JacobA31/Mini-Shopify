@@ -48,55 +48,85 @@ H2 file that survives restarts and redeploys. The schema comes from the Flyway m
 |---------------------|-----------|---------------------------------------------------|
 | 1: Early prototype  | Nov 12    | One use case working end to end; CI + Azure live  |
 | 2: Alpha release    | Nov 26    | Several related features usable together          |
-| 3: Final demo       | Dec 10    | Feature-complete, no dangling links               |
+| 3: Final demo       | Dec 10    | Feature-complete with login, no dangling links    |
 
 ## Current state
 
-_Summarised from the [Kanban board](https://github.com/users/JacobA31/projects/4) on 2026-11-11.
+_Summarised from the [Kanban board](https://github.com/users/JacobA31/projects/4) on 2026-11-23.
 Keep this in sync with the board before every milestone._
 
+**Sprint 2 ([Sprint 2 – Alpha](https://github.com/JacobA31/Mini-Shopify/milestone/2), demo Nov 26):**
+All 5 planned features completed and deployed. 138 tests pass in CI.
+
+| Column        | Issue                                                                                                                    | Owner          |
+|---------------|--------------------------------------------------------------------------------------------------------------------------|----------------|
+| Completed     | [#19](https://github.com/JacobA31/Mini-Shopify/issues/19) Shopping cart kept in the session: add, view, change quantity, remove | BouaklineMahdi |
+| Completed     | [#21](https://github.com/JacobA31/Mini-Shopify/issues/21) Keep data on Azure across restarts, and seed demo shops and products | JacobA31       |
+| Completed     | [#23](https://github.com/JacobA31/Mini-Shopify/issues/23) Product pictures: upload one with each product and show it in the catalog | radhepatel55   |
+| Completed     | [#24](https://github.com/JacobA31/Mini-Shopify/issues/24) Merchant edits a shop and its products                         | tabiafarid     |
+| Completed     | [#25](https://github.com/JacobA31/Mini-Shopify/issues/25) Checkout in one transaction that checks and decrements inventory | FareedElbokl   |
+
 **Sprint 1 ([Sprint 1 – Prototype](https://github.com/JacobA31/Mini-Shopify/milestone/1), demo Nov 12):**
-All 9 issues completed: the project setup, the 4 feature issues, and integration tests for every feature.
+All 9 issues completed: project setup, CI/CD and Azure ([#3](https://github.com/JacobA31/Mini-Shopify/issues/3)–[#6](https://github.com/JacobA31/Mini-Shopify/issues/6)),
+create a shop ([#7](https://github.com/JacobA31/Mini-Shopify/issues/7)), add products ([#8](https://github.com/JacobA31/Mini-Shopify/issues/8)),
+search shops ([#9](https://github.com/JacobA31/Mini-Shopify/issues/9)), view a catalog ([#10](https://github.com/JacobA31/Mini-Shopify/issues/10)),
+and integration tests for every feature ([#16](https://github.com/JacobA31/Mini-Shopify/issues/16)).
 
-| Column        | Issue                                                                                                         |   Owner           |
-|---------------|---------------------------------------------------------------------------------------------------------------|----------------|
-| Completed     | [#3](https://github.com/JacobA31/Mini-Shopify/issues/3) CI: build and test on every PR and push               | JacobA31        |
-| Completed     | [#4](https://github.com/JacobA31/Mini-Shopify/issues/4) Project skeleton with layered packages                | JacobA31        |
-| Completed     | [#5](https://github.com/JacobA31/Mini-Shopify/issues/5) Deploy to Azure from CI                               | JacobA31        |
-| Completed     | [#6](https://github.com/JacobA31/Mini-Shopify/issues/6) Repo setup: collaborators and branch protection       | JacobA31        |
-| Completed     | [#7](https://github.com/JacobA31/Mini-Shopify/issues/7) Create a shop with a name, description, and tags      | FareedElbokl    |
-| Completed     | [#8](https://github.com/JacobA31/Mini-Shopify/issues/8) Add products with a description, price, and inventory | radhepatel55    |
-| Completed     | [#9](https://github.com/JacobA31/Mini-Shopify/issues/9) Search shops by name or tag                           | tabiafarid      |
-| Completed     | [#10](https://github.com/JacobA31/Mini-Shopify/issues/10) View a shop's product catalog                       | BouaklineMahdi  |
-| Completed     | [#16](https://github.com/JacobA31/Mini-Shopify/issues/16) Milestone 1: Integration testing                    | everyone        |
+**What works today:**
 
-**What works today:** a merchant can create a shop with a name, description, and tags, and add
-products with a description, price, and inventory. A customer can search shops by name or tag and
-click a result to browse that shop's product catalog. Every feature has unit and integration tests,
-and CI runs them on every pull request and every push to `main`. Every push to `main` is also deployed
-automatically to the [live app](https://mini-shopify-hhamccftdqg3fegq.canadacentral-01.azurewebsites.net/)
-on Azure.
+- **Merchants** create a shop with a name, description, and tags, add products with a description,
+  price, inventory, and an optional picture (JPEG, PNG, GIF, or WebP, up to 2 MB), and edit the shop and
+  its products afterwards (including replacing or removing the picture).
+- **Customers** search shops by name or tag, browse a shop's catalog with pictures, and put products in a
+  cart kept in their session. They can change quantities or remove items, then check out.
+- **Checkout** runs in one transaction: it re-reads inventory, rejects anything out of stock, saves the
+  order with each item's price, decrements inventory, and shows an order confirmation. If any item fails,
+  nothing changes. `@Version` on `Product` stops two checkouts from both buying the last item.
+- **Data survives** deploys and restarts on Azure (H2 file + Flyway migrations), and an empty database is
+  seeded with four demo shops and their products.
+- Every feature has unit, controller, and integration tests. CI runs them on every pull request and
+  push, and every push to `main` deploys to the
+  [live app](https://mini-shopify-hhamccftdqg3fegq.canadacentral-01.azurewebsites.net/).
+
+**Known gaps (going into Sprint 3):**
+
+- There is no login, so anyone can create or edit any shop.
+- After leaving the *Shop created* page, a merchant has no link back to their shop's details,
+  product list, or edit pages: those pages can only be reached by typing the URL.
+- The home page only shows shops after a search. There is no way to browse all shops.
+- The demo products have no pictures, and products without a picture show no placeholder.
+- Merchants can't see the orders placed in their shop.
 
 ## Plan for next sprint
 
-**Sprint 2 ([Sprint 2 – Alpha](https://github.com/JacobA31/Mini-Shopify/milestone/2), Nov 12 – Nov 26).**
-Goal for the alpha demo: a customer can find a shop, put several of its products in a cart, and check
-out, and a purchase can never take more than the available inventory.
+**Sprint 3 ([Sprint 3 – Final](https://github.com/JacobA31/Mini-Shopify/milestone/3), Nov 26 – Dec 10).**
+Goal for the final demo: merchants and customers log in. A merchant manages only their own shops and sees
+the orders placed in them, and a customer sees their past orders. Every page can be reached from a link,
+and there are no links to unfinished features.
 
-| Work item                                                                         | Owner          |
-|-----------------------------------------------------------------------------------|----------------|
-| Finish anything left over from Sprint 1                                           | issue owners   |
-| Product pictures: upload one with each product and show it in the catalog         | radhepatel55   |
-| Shopping cart kept in the session: add, view, change quantity, remove             | BouaklineMahdi |
-| Checkout in one transaction that checks and decrements inventory                  | FareedElbokl   |
-| Keep data on Azure across restarts, and seed demo shops and products              | JacobA31       |
-| Merchant edits a shop and its products                                            | tabiafarid     |
-| Update the UML class diagram and DB schema below in every PR that changes an entity | everyone     |
+| Work item                                                                                                  | Owner          | Depends on |
+|------------------------------------------------------------------------------------------------------------|----------------|------------|
+| Login and registration with Spring Security: `MERCHANT` and `CUSTOMER` roles, a `UserAccount` entity, and a migration | JacobA31       | —          |
+| Shops belong to the merchant who created them; only the owner can edit a shop or its products (403 page otherwise) | tabiafarid     | Login      |
+| Merchant dashboard: *My shops* with links to each shop's details, products, and edit pages, plus the orders placed in each shop | FareedElbokl   | Login, owner |
+| Customer order history: link orders to the customer who placed them, and add a *My orders* page with each order's details | BouaklineMahdi | Login      |
+| Pictures for the demo products, a placeholder when a product has no picture, and a product details page | radhepatel55   | —          |
+| Home page lists all shops (sorted by name) and lets customers filter by tag, as well as search              | tabiafarid     | —          |
+| UI polish: consistent layout and navigation, no orphan pages or dangling links, clear error messages        | everyone       | —          |
+| Final pass: README, UML, DB schema, and `docs/architecture.md` match the code; demo script for Dec 10      | JacobA31       | everything |
 
-Each row becomes an issue in the Sprint 2 milestone. Every team member deploys at least once a week.
+Each row becomes an issue in the Sprint 3 milestone. Every team member deploys at least once a week.
 
-**Sprint 3 (Nov 26 – Dec 10, tentative):** order confirmation page, merchant/customer login if time
-allows, UI polish, and no links to unfinished features.
+**Order of work:** login is first because three items depend on it, so it should be merged by
+**Nov 30**. Until then, the other owners work on the parts that don't need it (pages, services, tests)
+and use a hard-coded user in tests. Login, shop owners, and order history each change the schema, so
+**coordinate migration numbers** (V2, V3, V4, in the order the PRs merge): rename yours if someone merges
+the same number first (see [CONTRIBUTING.md](CONTRIBUTING.md#changing-the-database-schema)).
+
+**Stretch goals if time allows:** search products across all shops, show "only N left" on low-stock
+products, and "add to cart" without a page reload. Before the demo, check how long the live app takes
+to wake up: the first request took about 40 s on Nov 23. If it is still that slow, move the App Service
+to the Basic B1 plan.
 
 ## Models (UML class diagram)
 
