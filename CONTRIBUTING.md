@@ -133,19 +133,19 @@ Done once at the start of the project. Most of these need **admin access to the 
 
 ### GitHub
 
-- [ ] **Add every team member as a collaborator** with write access
+- [x] **Add every team member as a collaborator** with write access
       (*Settings → Collaborators → Add people*).
-- [ ] Issues are enabled (*Settings → General → Features → Issues*).
-- [ ] Create a label named `scrum` (*Issues → Labels → New label*), used by the weekly scrum template.
-- [ ] **Create the Kanban board:** *Projects → New project → Board*, with columns
+- [x] Issues are enabled (*Settings → General → Features → Issues*).
+- [x] Create a label named `scrum` (*Issues → Labels → New label*), used by the weekly scrum template.
+- [x] **Create the Kanban board:** *Projects → New project → Board*, with columns
       `Backlog`, `In progress`, `Completed`. Link it to this repository.
-- [ ] **Protect `main`** (*Settings → Branches → Add branch ruleset*, or *Add classic branch protection rule*)
+- [x] **Protect `main`** (*Settings → Branches → Add branch ruleset*, or *Add classic branch protection rule*)
       targeting `main`:
   - Require a pull request before merging, with **2 required approvals**
   - Dismiss stale approvals when new commits are pushed
   - Require status checks to pass: **`Build & test`** (appears after CI has run once)
   - Block force pushes
-- [ ] *Settings → General → Pull Requests*: allow **squash merging**, and enable
+- [x] *Settings → General → Pull Requests*: allow **squash merging**, and enable
       *Automatically delete head branches*.
 
 ### Azure (production)
@@ -153,7 +153,7 @@ Done once at the start of the project. Most of these need **admin access to the 
 The workflow in `.github/workflows/ci-cd.yml` deploys on every push to `main`, once the variable and
 secret below exist. Until then, the deploy job is skipped and only build and tests run.
 
-- [ ] In the [Azure portal](https://portal.azure.com) (the *Azure for Students* subscription works),
+- [x] In the [Azure portal](https://portal.azure.com) (the *Azure for Students* subscription works),
       **create a Web App**:
   - Publish: **Code**, Runtime stack: **Java 17**, Java web server stack: **Java SE (Embedded Web Server)**
   - Operating system: **Linux**, Region: e.g. **Canada Central**
@@ -161,9 +161,9 @@ secret below exist. Until then, the deploy job is skipped and only build and tes
     reliable for demos.
   - On the *Deployment* tab, **leave GitHub Actions continuous deployment disabled**. We already have our
     own workflow, and enabling it would make Azure commit a second one.
-- [ ] In the new Web App: *Settings → Configuration → General settings* → turn **SCM Basic Auth Publishing
+- [x] In the new Web App: *Settings → Configuration → General settings* → turn **SCM Basic Auth Publishing
       Credentials** **On** and save. This is required to download a publish profile.
-- [ ] *Overview → Download publish profile*. In GitHub: *Settings → Secrets and variables → Actions*:
+- [x] *Overview → Download publish profile*. In GitHub: *Settings → Secrets and variables → Actions*:
   - **Secrets** tab → New repository secret `AZURE_WEBAPP_PUBLISH_PROFILE` = the full contents of the
     downloaded file
   - **Variables** tab → New repository variable `AZURE_WEBAPP_NAME` = the Web App's name
@@ -172,7 +172,7 @@ secret below exist. Until then, the deploy job is skipped and only build and tes
       App Service's persistent `/home` disk, so data survives restarts and redeploys. Keep the App Service
       at **one instance** (no scale-out): two instances can't share the H2 file.
 - [ ] Optional: *Monitoring → Health check* path `/actuator/health`.
-- [ ] Re-run the latest workflow on `main` (*Actions → CI/CD → Run workflow*). Then open
+- [x] Re-run the latest workflow on `main` (*Actions → CI/CD → Run workflow*). Then open
       `https://<app-name>.azurewebsites.net` and put the URL in the README.
 
 **Troubleshooting:** if the deploy succeeds but the site shows an *Application Error*, open
