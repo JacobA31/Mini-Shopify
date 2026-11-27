@@ -1,0 +1,26 @@
+{
+    "name": "mini-shopify-client-tests",
+    "private": true,
+    "description": "Client-side tests for Mini-Shopify: Jasmine for the JavaScript in src/main/resources/static/js, Playwright for end-to-end browser tests. The app itself is built with Maven.",
+    "engines": {
+        "node": ">=22"
+    },
+    "scripts": {
+        "test": "node src/test/js/run.js",
+        "test:js": "jasmine --config=jasmine.json",
+        "test:js:watch": "node --watch-path=src/main/resources/static/js --watch-path=src/main/resources/templates --watch-path=src/test/js node_modules/jasmine/bin/jasmine.js --config=jasmine.json",
+        "test:e2e": "playwright test",
+        "test:e2e:ui": "playwright test --ui",
+        "test:smoke": "playwright test e2e/smoke --project=chromium",
+        "codegen": "playwright codegen http://localhost:8080",
+        "report": "playwright show-report",
+        "typecheck": "tsc -p tsconfig.json"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.65.1",
+        "@types/node": "^22.20.7",
+        "jasmine": "^7.0.0",
+        "jsdom": "^31.0.1",
+        "typescript": "^7.0.2"
+    }
+}

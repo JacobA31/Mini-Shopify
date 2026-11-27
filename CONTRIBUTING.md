@@ -27,6 +27,39 @@ Tests never get the demo data.
 In IntelliJ, use *File → Open* on the `pom.xml` and open it as a project. Then run
 `MiniShopifyApplication`.
 
+### Client-side tests
+
+The Java tests check the HTML the server sends, but they never run the JavaScript or click through
+pages in a browser. Two more kinds of tests do that. They need Node 22 or newer:
+
+| Kind | Tool | Where | Tests |
+|------|------|-------|-------|
+| JavaScript unit tests | Jasmine + jsdom | `src/test/js/*.spec.js` | the page scripts in `static/js`, against the real templates |
+| End-to-end browser tests | Playwright | `e2e/**/*.spec.ts` | whole user flows in Chromium, Firefox, and WebKit |
+
+```bash
+npm ci                         # once, and after package.json changes
+npx playwright install         # once: downloads the browsers
+
+npm run test:js                # Jasmine
+npm run test:js:watch          # Jasmine, re-run whenever a script, template, or spec is saved
+npm test                       # same Jasmine configuration as test:js
+npm test -- --watch             # same watch behavior as test:js:watch
+npm run test:e2e               # Playwright: uses the app on :8080, or starts target/mini-shopify.jar
+npm run test:e2e:ui            # Playwright's UI mode: pick tests, watch them run, step through traces
+npm run codegen                # record clicks on the running app and get a test written for you
+npm run report                 # open the last Playwright HTML report
+```
+
+- **Jasmine:** `const page = loadPage("shops/new.html")` builds a fresh page from the real template,
+  then `page.runScript("shop-form.js")` runs the script in it; check `page.document` afterwards
+  (see `src/test/js/page.js` and `product-form.spec.js`).
+- **Playwright:** use `getByRole`, `getByLabel`, and `getByText` locators rather than CSS classes.
+  Tests run in parallel against one shared database, so a test that changes data should create its
+  own shop and products (with a unique name) rather than use the demo data.
+- **`e2e/smoke/`** also runs against the live app on Azure after every deploy. Tests there must be
+  **read-only**: never create, edit, or buy anything.
+
 ## Workflow: from issue to production
 
 1. **Pick an issue** from the Kanban *Backlog* column, assign yourself, and move it to *In progress*.
