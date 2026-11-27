@@ -6,6 +6,7 @@
         "node": ">=22"
     },
     "scripts": {
+        "test": "node src/test/js/run.js",
         "test:js": "jasmine --config=jasmine.json",
         "test:js:watch": "node --watch-path=src/main/resources/static/js --watch-path=src/main/resources/templates --watch-path=src/test/js node_modules/jasmine/bin/jasmine.js --config=jasmine.json",
         "test:e2e": "playwright test",

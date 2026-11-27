@@ -43,6 +43,8 @@ npx playwright install         # once: downloads the browsers
 
 npm run test:js                # Jasmine
 npm run test:js:watch          # Jasmine, re-run whenever a script, template, or spec is saved
+npm test                       # same Jasmine configuration as test:js
+npm test -- --watch             # same watch behavior as test:js:watch
 npm run test:e2e               # Playwright: uses the app on :8080, or starts target/mini-shopify.jar
 npm run test:e2e:ui            # Playwright's UI mode: pick tests, watch them run, step through traces
 npm run codegen                # record clicks on the running app and get a test written for you

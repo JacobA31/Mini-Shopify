@@ -8,6 +8,7 @@
     <h1>Create a shop</h1>
     <p>Enter your shop details, then add any tags that describe it.</p>
 
+    <!-- Tag behavior is tested in src/test/js/shop-form.spec.js; keep the form/tag IDs in sync. -->
     <form th:action="@{/shops}" th:object="${shopForm}" method="post" id="shop-form">
         <div class="form-field">
             <label for="name">Shop name</label>
