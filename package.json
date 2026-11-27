@@ -12,11 +12,14 @@
         "test:e2e:ui": "playwright test --ui",
         "test:smoke": "playwright test e2e/smoke --project=chromium",
         "codegen": "playwright codegen http://localhost:8080",
-        "report": "playwright show-report"
+        "report": "playwright show-report",
+        "typecheck": "tsc -p tsconfig.json"
     },
     "devDependencies": {
         "@playwright/test": "^1.65.1",
+        "@types/node": "^22.20.7",
         "jasmine": "^7.0.0",
-        "jsdom": "^31.0.1"
+        "jsdom": "^31.0.1",
+        "typescript": "^7.0.2"
     }
 }
