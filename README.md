@@ -53,6 +53,7 @@ npx playwright install       # once: downloads Chromium, Firefox, and WebKit
 ./mvnw package -DskipTests   # build target/mini-shopify.jar, which Playwright starts on :8080
 npm run test:e2e             # run the tests in all three browsers
 npm run test:e2e:ui          # UI mode: pick tests, watch them run, step through each action
+npm run typecheck            # check the tests' TypeScript for mistakes, without running them
 ```
 
 If the app is already running on port 8080 (e.g. `./mvnw spring-boot:run`), Playwright uses it

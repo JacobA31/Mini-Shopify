@@ -1,0 +1,16 @@
+{
+    // Type-checks the Playwright tests: `npm run typecheck`.
+    // Playwright runs .ts files without this so mistakes like a
+    // misspelled method or a wrong argument type are caught here instead of when a test runs.
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "lib": ["ES2022", "DOM"],
+        "types": ["node"],
+        "strict": true,
+        "noEmit": true,
+        "skipLibCheck": true
+    },
+    "include": ["e2e/**/*.ts", "playwright.config.ts"]
+}
