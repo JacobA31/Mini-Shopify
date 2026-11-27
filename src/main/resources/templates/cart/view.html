@@ -26,7 +26,6 @@
         <tbody>
         <tr th:each="line : ${cart.lines}">
             <td>
-            <td>
                 <img th:if="${line.hasImage()}"
                      th:src="@{/products/{id}/image(id=${line.productId})}"
                      th:alt="${line.productName}"
