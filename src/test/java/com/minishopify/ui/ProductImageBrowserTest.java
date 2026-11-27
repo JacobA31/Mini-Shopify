@@ -1,12 +1,16 @@
-package com.minishopify.browser;
+package com.minishopify.ui;
 
 import com.minishopify.model.Shop;
 import com.minishopify.repository.ShopRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestExecutionExceptionHandler;
 import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -17,10 +21,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Base64;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,19 +34,19 @@ import static org.assertj.core.api.Assertions.assertThat;
  * and then removing the picture while editing it.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ExtendWith(ProductImageBrowserTest.ScreenshotOnFailure.class)
 class ProductImageBrowserTest {
 
-    private static final By LIST_IMAGE = By.cssSelector("table img");
+    private static final String TEST_IMAGE = "/test-product.jpg";
     private static final By EDIT_LINK = By.linkText("Edit");
+    private static final By CATALOG_CARD = By.cssSelector(".product-card");
+    private static final By CATALOG_IMAGE = By.cssSelector(".product-card img");
 
     @Value("${local.server.port}")
     private int port;
 
     @Autowired
     private ShopRepository shopRepository;
-
-    @TempDir
-    Path tempDir;
 
     private WebDriver driver;
     private WebDriverWait wait;
@@ -70,33 +74,58 @@ class ProductImageBrowserTest {
     }
 
     @Test
-    void merchantCanRemoveAProductsPictureByEditingIt() throws IOException {
-        ProductFormPage form = new ProductFormPage(driver, wait, "http://localhost:" + port);
+    void merchantCanRemoveAProductsPictureByEditingIt() throws Exception {
+        ProductFormPage form = new ProductFormPage(driver, wait, baseUrl());
 
-        // add a product with a picture
         form.openAddForm(shop.getId())
             .fillIn("Dark Roast", "Fresh beans", "12.50", "5")
-            .chooseImage(createPicture())
+            .chooseImage(testImage())
             .save();
+        wait.until(ExpectedConditions.elementToBeClickable(EDIT_LINK));
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(LIST_IMAGE));
+        // the customer catalog shows the picture
+        openCatalog();
+        assertThat(driver.findElements(CATALOG_IMAGE)).hasSize(1);
 
+        driver.get(baseUrl() + "/shops/" + shop.getId() + "/products");
         wait.until(ExpectedConditions.elementToBeClickable(EDIT_LINK)).click();
         form.removeCurrentImage().save();
-
         wait.until(ExpectedConditions.elementToBeClickable(EDIT_LINK));
-        assertThat(driver.findElements(LIST_IMAGE)).isEmpty();
 
-        driver.get("http://localhost:" + port + "/shops/" + shop.getId() + "/catalog");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".product-card")));
+        openCatalog();
         assertThat(driver.findElement(By.cssSelector(".product-card h3")).getText()).isEqualTo("Dark Roast");
-        assertThat(driver.findElements(By.cssSelector(".product-card img"))).isEmpty();
+        assertThat(driver.findElements(CATALOG_IMAGE)).isEmpty();
     }
 
-    private Path createPicture() throws IOException {
-        byte[] png = Base64.getDecoder().decode(
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==");
-        return Files.write(tempDir.resolve("beans.png"), png);
+    private void openCatalog() {
+        driver.get(baseUrl() + "/shops/" + shop.getId() + "/catalog");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(CATALOG_CARD));
+    }
+
+    private String baseUrl() {
+        return "http://localhost:" + port;
+    }
+
+    private Path testImage() throws URISyntaxException {
+        return Path.of(getClass().getResource(TEST_IMAGE).toURI());
+    }
+
+    static class ScreenshotOnFailure implements TestExecutionExceptionHandler {
+        @Override
+        public void handleTestExecutionException(ExtensionContext context, Throwable failure) throws Throwable {
+            WebDriver driver = ((ProductImageBrowserTest) context.getRequiredTestInstance()).driver;
+            if (driver instanceof TakesScreenshot camera) {
+                try {
+                    Path folder = Path.of("target", "selenium");
+                    Files.createDirectories(folder);
+                    Files.write(folder.resolve(context.getRequiredTestMethod().getName() + ".jpg"),
+                        camera.getScreenshotAs(OutputType.BYTES));
+                } catch (IOException ignored) {
+
+                }
+            }
+            throw failure;
+        }
     }
 
 }
