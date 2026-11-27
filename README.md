@@ -42,6 +42,23 @@ H2 file that survives restarts and redeploys. The schema comes from the Flyway m
 `src/main/resources/db/migration`: **if you change an entity, add a migration**
 (see [CONTRIBUTING.md](CONTRIBUTING.md#changing-the-database-schema)).
 
+### End-to-end browser tests (Playwright)
+
+The Java tests never run JavaScript or click through pages in a browser,however, the Playwright tests in
+`e2e/` do. They need Node 22 or newer.
+
+```bash
+npm ci                       # once, and after package.json changes
+npx playwright install       # once: downloads Chromium, Firefox, and WebKit
+./mvnw package -DskipTests   # build target/mini-shopify.jar, which Playwright starts on :8080
+npm run test:e2e             # run the tests in all three browsers
+npm run test:e2e:ui          # UI mode: pick tests, watch them run, step through each action
+```
+
+If the app is already running on port 8080 (e.g. `./mvnw spring-boot:run`), Playwright uses it
+instead of starting the JAR, so restart it after changing code. See
+[CONTRIBUTING.md](CONTRIBUTING.md#client-side-tests) for writing tests and the Jasmine unit tests.
+
 ## Milestones
 
 | Milestone           | Demo date | Goal                                              |
